@@ -1,6 +1,6 @@
 # Introduction
 
-Ce wifi présentera le durcissement effectué sur un système d'exploitation Debian 13 en suivant principalement les recommendations de l'[ANSSI](https://cyber.gouv.fr/). Il explorera la configuration que ce soit du système d'exploitation ou de service omniprésent comme OpenSSH. Le but est ici est d'améliorer le score de durcissement tout en conservant un fonctionnement normal de notre système.
+Ce Wiki présentera le durcissement effectué sur un système d'exploitation Debian 13 en suivant principalement les recommendations de l'[ANSSI](https://cyber.gouv.fr/). Il explorera la configuration que ce soit du système d'exploitation ou de service omniprésent comme OpenSSH. Le but est ici est d'améliorer le score de durcissement tout en conservant un fonctionnement normal de notre système.
 
 ## Installation
 
