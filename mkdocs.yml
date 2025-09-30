@@ -11,7 +11,7 @@ theme:
     - navigation.tabs
 nav:
   - Introduction: ./introduction.md
-  - Hardenning:
+  - Hardenning: ./hardenning/index.md
     - Guide ANSSI: ./hardenning/guide-anssi.md
     - ANSSI OpenSSH: ./hardenning/anssi-openssh.md
     - Guide Admin Debian: ./hardenning/guide-admin-debian.md
