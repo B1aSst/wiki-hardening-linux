@@ -13,5 +13,5 @@ nav:
   - Introduction: ./introduction.md
   - Hardenning:
     - Guide ANSSI: ./hardenning/guide-anssi.md
-    - ANSSI \- OpenSSH: ./hardenning/anssi-openssh.md
+    - ANSSI OpenSSH: ./hardenning/anssi-openssh.md
     - Guide Admin Debian: ./hardenning/guide-admin-debian.md
