@@ -2,3 +2,16 @@ site_name: Wiki Hardenning Linux
 site_url: https://b1asst.github.io/wiki-hardening-linux/
 theme:
   name: material
+  features:
+    - content.code.copy
+    - toc.follow
+    - header.autohide
+    - navigation.indexes
+    - navigation.sections
+    - navigation.tabs
+nav:
+  - Introduction: ./introduction.md
+  - Hardenning:
+    - Guide ANSSI: ./hardenning/guide-anssi.md
+    - ANSSI \- OpenSSH: ./hardenning/anssi-openssh.md
+    - Guide Admin Debian: ./hardenning/guide-admin-debian.md
