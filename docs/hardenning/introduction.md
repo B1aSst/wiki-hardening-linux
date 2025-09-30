@@ -1,4 +1,4 @@
-# Hardenning
+# Hardening
 
 ## Introduction
 
@@ -71,7 +71,7 @@ Voici les résultats des scan sur la VM Bebian 13 tout juste installée :
 [+] Plugins (phase 1)
 ------------------------------------
  Note: plugins have more extensive tests and may take several minutes to complete
-  
+
   - Plugin: debian
     [
 [+] Debian Tests
@@ -539,219 +539,219 @@ Voici les résultats des scan sur la VM Bebian 13 tout juste installée :
 
   Suggestions (45):
   ----------------------------
-  * This release is more than 4 months old. Check the website or GitHub to see if there is an update available. [LYNIS] 
+  * This release is more than 4 months old. Check the website or GitHub to see if there is an update available. [LYNIS]
     - Related resources
       * Website: https://cisofy.com/lynis/controls/LYNIS/
 
-  * Install libpam-tmpdir to set $TMP and $TMPDIR for PAM sessions [DEB-0280] 
+  * Install libpam-tmpdir to set $TMP and $TMPDIR for PAM sessions [DEB-0280]
     - Related resources
       * Website: https://cisofy.com/lynis/controls/DEB-0280/
 
-  * Install apt-listbugs to display a list of critical bugs prior to each APT installation. [DEB-0810] 
+  * Install apt-listbugs to display a list of critical bugs prior to each APT installation. [DEB-0810]
     - Related resources
       * Website: https://cisofy.com/lynis/controls/DEB-0810/
 
-  * Install needrestart, alternatively to debian-goodies, so that you can run needrestart after upgrades to determine which daemons are using old versions of libraries and need restarting. [DEB-0831] 
+  * Install needrestart, alternatively to debian-goodies, so that you can run needrestart after upgrades to determine which daemons are using old versions of libraries and need restarting. [DEB-0831]
     - Related resources
       * Website: https://cisofy.com/lynis/controls/DEB-0831/
 
-  * Install fail2ban to automatically ban hosts that commit multiple authentication errors. [DEB-0880] 
+  * Install fail2ban to automatically ban hosts that commit multiple authentication errors. [DEB-0880]
     - Related resources
       * Website: https://cisofy.com/lynis/controls/DEB-0880/
 
-  * Set a password on GRUB boot loader to prevent altering boot configuration (e.g. boot in single user mode without password) [BOOT-5122] 
+  * Set a password on GRUB boot loader to prevent altering boot configuration (e.g. boot in single user mode without password) [BOOT-5122]
     - Related resources
       * Website: https://cisofy.com/lynis/controls/BOOT-5122/
 
-  * Determine runlevel and services at startup [BOOT-5180] 
+  * Determine runlevel and services at startup [BOOT-5180]
     - Related resources
       * Website: https://cisofy.com/lynis/controls/BOOT-5180/
 
-  * Consider hardening system services [BOOT-5264] 
+  * Consider hardening system services [BOOT-5264]
     - Details  : Run '/usr/bin/systemd-analyze security SERVICE' for each service
     - Related resources
       * Article: Systemd features to secure service files: https://linux-audit.com/systemd/systemd-features-to-secure-units-and-services/
       * Website: https://cisofy.com/lynis/controls/BOOT-5264/
 
-  * Configure password hashing rounds in /etc/login.defs [AUTH-9230] 
+  * Configure password hashing rounds in /etc/login.defs [AUTH-9230]
     - Related resources
       * Article: Linux password security: hashing rounds: https://linux-audit.com/authentication/configure-the-minimum-password-length-on-linux-systems/
       * Website: https://cisofy.com/lynis/controls/AUTH-9230/
 
-  * Install a PAM module for password strength testing like pam_cracklib or pam_passwdqc or libpam-passwdqc [AUTH-9262] 
+  * Install a PAM module for password strength testing like pam_cracklib or pam_passwdqc or libpam-passwdqc [AUTH-9262]
     - Related resources
       * Article: Configure minimum password length for Linux systems: https://linux-audit.com/configure-the-minimum-password-length-on-linux-systems/
       * Website: https://cisofy.com/lynis/controls/AUTH-9262/
 
-  * When possible set expire dates for all password protected accounts [AUTH-9282] 
+  * When possible set expire dates for all password protected accounts [AUTH-9282]
     - Related resources
       * Website: https://cisofy.com/lynis/controls/AUTH-9282/
 
-  * Configure minimum password age in /etc/login.defs [AUTH-9286] 
+  * Configure minimum password age in /etc/login.defs [AUTH-9286]
     - Related resources
       * Article: Configure minimum password length for Linux systems: https://linux-audit.com/configure-the-minimum-password-length-on-linux-systems/
       * Website: https://cisofy.com/lynis/controls/AUTH-9286/
 
-  * Configure maximum password age in /etc/login.defs [AUTH-9286] 
+  * Configure maximum password age in /etc/login.defs [AUTH-9286]
     - Related resources
       * Article: Configure minimum password length for Linux systems: https://linux-audit.com/configure-the-minimum-password-length-on-linux-systems/
       * Website: https://cisofy.com/lynis/controls/AUTH-9286/
 
-  * Default umask in /etc/login.defs could not be found and defaults usually to 022, which could be more strict like 027 [AUTH-9328] 
+  * Default umask in /etc/login.defs could not be found and defaults usually to 022, which could be more strict like 027 [AUTH-9328]
     - Related resources
       * Article: Set default file permissions on Linux with umask: https://linux-audit.com/filesystems/file-permissions/set-default-file-permissions-with-umask/
       * Website: https://cisofy.com/lynis/controls/AUTH-9328/
 
-  * To decrease the impact of a full /home file system, place /home on a separate partition [FILE-6310] 
+  * To decrease the impact of a full /home file system, place /home on a separate partition [FILE-6310]
     - Related resources
       * Website: https://cisofy.com/lynis/controls/FILE-6310/
 
-  * To decrease the impact of a full /var file system, place /var on a separate partition [FILE-6310] 
+  * To decrease the impact of a full /var file system, place /var on a separate partition [FILE-6310]
     - Related resources
       * Website: https://cisofy.com/lynis/controls/FILE-6310/
 
-  * Disable drivers like USB storage when not used, to prevent unauthorized storage or data theft [USB-1000] 
+  * Disable drivers like USB storage when not used, to prevent unauthorized storage or data theft [USB-1000]
     - Related resources
       * Website: https://cisofy.com/lynis/controls/USB-1000/
 
-  * Disable drivers like firewire storage when not used, to prevent unauthorized storage or data theft [STRG-1846] 
+  * Disable drivers like firewire storage when not used, to prevent unauthorized storage or data theft [STRG-1846]
     - Related resources
       * Website: https://cisofy.com/lynis/controls/STRG-1846/
 
-  * Install debsums utility for the verification of packages with known good database. [PKGS-7370] 
+  * Install debsums utility for the verification of packages with known good database. [PKGS-7370]
     - Related resources
       * Website: https://cisofy.com/lynis/controls/PKGS-7370/
 
-  * Install package apt-show-versions for patch management purposes [PKGS-7394] 
+  * Install package apt-show-versions for patch management purposes [PKGS-7394]
     - Related resources
       * Website: https://cisofy.com/lynis/controls/PKGS-7394/
 
-  * Consider using a tool to automatically apply upgrades [PKGS-7420] 
+  * Consider using a tool to automatically apply upgrades [PKGS-7420]
     - Related resources
       * Website: https://cisofy.com/lynis/controls/PKGS-7420/
 
-  * Determine if protocol 'dccp' is really needed on this system [NETW-3200] 
+  * Determine if protocol 'dccp' is really needed on this system [NETW-3200]
     - Related resources
       * Website: https://cisofy.com/lynis/controls/NETW-3200/
 
-  * Determine if protocol 'sctp' is really needed on this system [NETW-3200] 
+  * Determine if protocol 'sctp' is really needed on this system [NETW-3200]
     - Related resources
       * Website: https://cisofy.com/lynis/controls/NETW-3200/
 
-  * Determine if protocol 'rds' is really needed on this system [NETW-3200] 
+  * Determine if protocol 'rds' is really needed on this system [NETW-3200]
     - Related resources
       * Website: https://cisofy.com/lynis/controls/NETW-3200/
 
-  * Determine if protocol 'tipc' is really needed on this system [NETW-3200] 
+  * Determine if protocol 'tipc' is really needed on this system [NETW-3200]
     - Related resources
       * Website: https://cisofy.com/lynis/controls/NETW-3200/
 
-  * Consider hardening SSH configuration [SSH-7408] 
+  * Consider hardening SSH configuration [SSH-7408]
     - Details  : AllowTcpForwarding (set YES to NO)
     - Related resources
       * Article: OpenSSH security and hardening: https://linux-audit.com/ssh/audit-and-harden-your-ssh-configuration/
       * Website: https://cisofy.com/lynis/controls/SSH-7408/
 
-  * Consider hardening SSH configuration [SSH-7408] 
+  * Consider hardening SSH configuration [SSH-7408]
     - Details  : ClientAliveCountMax (set 3 to 2)
     - Related resources
       * Article: OpenSSH security and hardening: https://linux-audit.com/ssh/audit-and-harden-your-ssh-configuration/
       * Website: https://cisofy.com/lynis/controls/SSH-7408/
 
-  * Consider hardening SSH configuration [SSH-7408] 
+  * Consider hardening SSH configuration [SSH-7408]
     - Details  : LogLevel (set INFO to VERBOSE)
     - Related resources
       * Article: OpenSSH security and hardening: https://linux-audit.com/ssh/audit-and-harden-your-ssh-configuration/
       * Website: https://cisofy.com/lynis/controls/SSH-7408/
 
-  * Consider hardening SSH configuration [SSH-7408] 
+  * Consider hardening SSH configuration [SSH-7408]
     - Details  : MaxAuthTries (set 6 to 3)
     - Related resources
       * Article: OpenSSH security and hardening: https://linux-audit.com/ssh/audit-and-harden-your-ssh-configuration/
       * Website: https://cisofy.com/lynis/controls/SSH-7408/
 
-  * Consider hardening SSH configuration [SSH-7408] 
+  * Consider hardening SSH configuration [SSH-7408]
     - Details  : MaxSessions (set 10 to 2)
     - Related resources
       * Article: OpenSSH security and hardening: https://linux-audit.com/ssh/audit-and-harden-your-ssh-configuration/
       * Website: https://cisofy.com/lynis/controls/SSH-7408/
 
-  * Consider hardening SSH configuration [SSH-7408] 
+  * Consider hardening SSH configuration [SSH-7408]
     - Details  : Port (set 22 to )
     - Related resources
       * Article: OpenSSH security and hardening: https://linux-audit.com/ssh/audit-and-harden-your-ssh-configuration/
       * Website: https://cisofy.com/lynis/controls/SSH-7408/
 
-  * Consider hardening SSH configuration [SSH-7408] 
+  * Consider hardening SSH configuration [SSH-7408]
     - Details  : TCPKeepAlive (set YES to NO)
     - Related resources
       * Article: OpenSSH security and hardening: https://linux-audit.com/ssh/audit-and-harden-your-ssh-configuration/
       * Website: https://cisofy.com/lynis/controls/SSH-7408/
 
-  * Consider hardening SSH configuration [SSH-7408] 
+  * Consider hardening SSH configuration [SSH-7408]
     - Details  : X11Forwarding (set YES to NO)
     - Related resources
       * Article: OpenSSH security and hardening: https://linux-audit.com/ssh/audit-and-harden-your-ssh-configuration/
       * Website: https://cisofy.com/lynis/controls/SSH-7408/
 
-  * Consider hardening SSH configuration [SSH-7408] 
+  * Consider hardening SSH configuration [SSH-7408]
     - Details  : AllowAgentForwarding (set YES to NO)
     - Related resources
       * Article: OpenSSH security and hardening: https://linux-audit.com/ssh/audit-and-harden-your-ssh-configuration/
       * Website: https://cisofy.com/lynis/controls/SSH-7408/
 
-  * Enable logging to an external logging host for archiving purposes and additional protection [LOGG-2154] 
+  * Enable logging to an external logging host for archiving purposes and additional protection [LOGG-2154]
     - Related resources
       * Website: https://cisofy.com/lynis/controls/LOGG-2154/
 
-  * Add a legal banner to /etc/issue, to warn unauthorized users [BANN-7126] 
+  * Add a legal banner to /etc/issue, to warn unauthorized users [BANN-7126]
     - Related resources
       * Article: The real purpose of login banners: https://linux-audit.com/the-real-purpose-of-login-banners-on-linux/
       * Website: https://cisofy.com/lynis/controls/BANN-7126/
 
-  * Add legal banner to /etc/issue.net, to warn unauthorized users [BANN-7130] 
+  * Add legal banner to /etc/issue.net, to warn unauthorized users [BANN-7130]
     - Related resources
       * Article: The real purpose of login banners: https://linux-audit.com/the-real-purpose-of-login-banners-on-linux/
       * Website: https://cisofy.com/lynis/controls/BANN-7130/
 
-  * Enable process accounting [ACCT-9622] 
+  * Enable process accounting [ACCT-9622]
     - Related resources
       * Website: https://cisofy.com/lynis/controls/ACCT-9622/
 
-  * Enable sysstat to collect accounting (no results) [ACCT-9626] 
+  * Enable sysstat to collect accounting (no results) [ACCT-9626]
     - Related resources
       * Website: https://cisofy.com/lynis/controls/ACCT-9626/
 
-  * Enable auditd to collect audit information [ACCT-9628] 
+  * Enable auditd to collect audit information [ACCT-9628]
     - Related resources
       * Article: Linux audit framework 101: basic rules for configuration: https://linux-audit.com/linux-audit-framework/linux-audit-framework-101-basic-rules-for-configuration/
       * Article: Monitoring Linux file access, changes and data modifications: https://linux-audit.com/monitoring-linux-file-access-changes-and-modifications/
       * Website: https://cisofy.com/lynis/controls/ACCT-9628/
 
-  * Install a file integrity tool to monitor changes to critical and sensitive files [FINT-4350] 
+  * Install a file integrity tool to monitor changes to critical and sensitive files [FINT-4350]
     - Related resources
       * Article: Monitoring Linux file access, changes and data modifications: https://linux-audit.com/monitoring-linux-file-access-changes-and-modifications/
       * Article: Monitor for file changes on Linux: https://linux-audit.com/monitor-for-file-system-changes-on-linux/
       * Website: https://cisofy.com/lynis/controls/FINT-4350/
 
-  * Determine if automation tools are present for system management [TOOL-5002] 
+  * Determine if automation tools are present for system management [TOOL-5002]
     - Related resources
       * Website: https://cisofy.com/lynis/controls/TOOL-5002/
 
-  * Consider restricting file permissions [FILE-7524] 
+  * Consider restricting file permissions [FILE-7524]
     - Details  : See screen output or log file
     - Solution : Use chmod to change file permissions
     - Related resources
       * Website: https://cisofy.com/lynis/controls/FILE-7524/
 
-  * One or more sysctl values differ from the scan profile and could be tweaked [KRNL-6000] 
+  * One or more sysctl values differ from the scan profile and could be tweaked [KRNL-6000]
     - Solution : Change sysctl value or disable test (skip-test=KRNL-6000:<sysctl-key>)
     - Related resources
       * Article: Linux hardening with sysctl settings: https://linux-audit.com/linux-hardening-with-sysctl/
       * Article: Overview of sysctl options and values: https://linux-audit.com/kernel/sysctl/
       * Website: https://cisofy.com/lynis/controls/KRNL-6000/
 
-  * Harden the system by installing at least one malware scanner, to perform periodic file system scans [HRDN-7230] 
+  * Harden the system by installing at least one malware scanner, to perform periodic file system scans [HRDN-7230]
     - Solution : Install a tool like rkhunter, chkrootkit, OSSEC, Wazuh
     - Related resources
       * Article: Antivirus for Linux: is it really needed?: https://linux-audit.com/malware/antivirus-for-linux-really-needed/

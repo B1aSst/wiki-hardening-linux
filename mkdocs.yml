@@ -1,4 +1,4 @@
-site_name: Wiki Hardenning Linux
+site_name: Wiki Hardening Linux
 site_url: https://b1asst.github.io/wiki-hardening-linux/
 theme:
   name: material
@@ -11,11 +11,11 @@ theme:
     - navigation.tabs
 nav:
   - Introduction: ./introduction.md
-  - Hardenning:
-    - Introduction: ./hardenning/introduction.md
-    - Guide ANSSI: ./hardenning/guide-anssi.md
-    - ANSSI OpenSSH: ./hardenning/anssi-openssh.md
-    - Guide Admin Debian: ./hardenning/guide-admin-debian.md
+  - Hardening:
+      - Introduction: ./hardening/introduction.md
+      - Guide ANSSI: ./hardening/guide-anssi.md
+      - ANSSI OpenSSH: ./hardening/anssi-openssh.md
+      - Guide Admin Debian: ./hardening/guide-admin-debian.md
 markdown_extensions:
   - admonition
   - pymdownx.highlight

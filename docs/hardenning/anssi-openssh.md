@@ -1,4 +1,4 @@
-# OpenSSH
+# Recommendation de configuration pour un usage sécurisé d'OpenSSH
 
 Le protocole SSH est particulièrement utilisé afin d'administrer des serveurs à distances car il utilise des protocoles cryptographiques pour sécurisé la communication avec le serveur.
 
