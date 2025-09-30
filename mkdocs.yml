@@ -16,3 +16,12 @@ nav:
     - Guide ANSSI: ./hardenning/guide-anssi.md
     - ANSSI OpenSSH: ./hardenning/anssi-openssh.md
     - Guide Admin Debian: ./hardenning/guide-admin-debian.md
+markdown_extensions:
+  - admonition
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - toc:
+      permalink: true
