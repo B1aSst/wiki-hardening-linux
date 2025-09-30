@@ -1,1 +1,4 @@
-site_name: My Docs
+site_name: Wiki Hardenning Linux
+site_url: https://b1asst.github.io/wiki-hardening-linux/
+theme:
+  name: material
