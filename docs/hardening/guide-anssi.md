@@ -978,17 +978,174 @@ Il est recommandé d’utiliser les fonctionnalités de Mandatory Access Control
 
 ### R38 : Créer un groupe dédié à l’usage de sudo
 
+Un groupe dédié à l’usage de sudo doit être créé. Seuls les utilisateurs membres de ce groupe doivent avoir le droit d’exécuter sudo.
+
+Un cas envisageable est de créer un groupe dédié, par exemple sudogrp, et de lui attribuer les droits pour exécuter sudo.
+
+Seuls les membres de ce groupe pourront ainsi y faire appel :
+
+```bash
+ls -al /usr/bin/sudo
+-rwsr -x---. 2 root sudogrp [...] /usr/bin/sudo
+```
+
+Ici nous avons préalablement installé et configuré sudo pour être utilisable que par les membres du groupe `sudo` (groupe créé lors par défaut de l'installation du paquet). Nous avons ajouté les comptes nécéssitant des droits pour l'administration à ce groupe :
+
+```bash
+sudo usermod -aG sudo admin-gmorice
+```
+
 ### R41 : Limiter l’utilisation de commandes nécessitant la directive EXEC
+
+Les commandes nécessitant l’exécution de sous-processus, directive EXEC doivent être explicitement listées et réduites autant que possible au strict minimum.
 
 ### R45 : Activer les profils de sécurité AppArmor
 
+Tout profil de sécurité AppArmor présent sur le système doit être activé en mode enforce par défaut quand la distribution en offre le support et qu’elle n’exploite pas de module de sécurité autre que AppArmor.
+
+Sur les distributions GNU/Linux récentes, AppArmor est activé par défaut. Pour s’assurer que AppArmor est bien actif, utiliser aa-status :
+
+```bash
+sudo aa-status
+apparmor module is loaded.
+105 profiles are loaded.
+6 profiles are in enforce mode.
+23 profiles are in complain mode.
+0 profiles are in prompt mode.
+0 profiles are in kill mode.
+76 profiles are in unconfined mode.
+0 processes have profiles defined.
+0 processes are in enforce mode.
+0 processes are in complain mode.
+0 processes are in prompt mode.
+0 processes are in kill mode.
+0 processes are unconfined but have a profile defined.
+0 processes are in mixed mode.
+```
+
+Il faut notamment vérifier que les processus en cours d’exécution sur le système et pour lesquels un profil est déclaré soient confinés en mode enforce par AppArmor.
+
+Installation de l'utilitaire de commande pour AppArmor :
+
+```bash
+sudo apt update
+sudo apt install apparmor-utils
+```
+
+Activation et enforcement de tous les modules chargés par AppArmor :
+
+```bash
+sudo aa-enforce /etc/apparmor.d/*
+```
+
+Vérification :
+
+```bash
+sudo aa-status 
+apparmor module is loaded.
+105 profiles are loaded.
+105 profiles are in enforce mode.
+[...]
+```
+
 ### R51 : Changer les secrets et droits d’accès dès l’installation
+
+Tous les fichiers sensibles et ceux qui concourent aux mécanismes d’authentification doivent être mis en place dès l’installation du système. Si des secrets par défaut sont préconfigurés, ils doivent alors être remplacés pendant, ou juste après, la phase d’installation du système.
+
+Voici quelques autres exemple ne s'appliquant pas dans notre cas (nouvelle installation sous Debian 13) :
+* Comptes utilisateurs et mots de passe (déjà appliquée)
+* Bases de données
+* Fichiers de configuration de services sensibles
+* Secrets d’applications (dans des fichiers de configuration par exemple)
+
+Nous pouvons néanmoins renforcer l'accès par SSH avec une clé SSH non configurée par défaut :
+
+Sur la machine d'administration / mgmt :
+
+```bash
+ssh-keygen -t rsa -b 4096
+cat ~/.ssh/id_rsa.pub
+```
+
+```
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDhtS5b7V6wsenM9MIbG4fzUTAPjA2LvGzNZ43lFg6uW3eIEpd88FZwMTrXIN4fd4f+51iW8[...]
+```
+
+Sur la machine sur laquelle nous faisont le durcissement (et sur le compte d'administration correspondant : `admin-gmorice`):
+
+```bash
+mkdir ~/.ssh
+chmod 700 ~/.ssh
+touch ~/.ssh/authorized_keys
+chmod 600 ~/.ssh/authorized_keys
+sudo nano ~/.ssh/authorized_keys
+```
+
+Coller la clé publique récupérée précédement.
+
+Configurer le service SSH :
+
+```bash
+sudo nano /etc/ssh/sshd_config
+```
+
+Désactivation de l'authentification via le compte root
+
+```bash
+PermitRootLogin no
+```
+
+Désactivation de l'authentification par mot de passe
+
+```bash
+PasswordAuthentication no
+```
+
+Redémarrage du service SSH
+
+```bash
+sudo service sshd restart
+```
+
+Maintenant, nous pourrons nous connecter qu'à l'aide d'une clé SSH depuis ce compte. Également, les connexions au compte root sont maintenant désactivées rendant une escalade depuis un compte d'administrateur obligatoire.
 
 ### R57 : Éviter l’usage d’exécutables avec les droits spéciaux setuid root et setgid root
 
+Les exécutables avec les droits spéciaux setuid root et setgid root doivent être le moins nombreux possible.
+Lorsqu’il est attendu que seuls les administrateurs les exécutent, il faut leur retirer ces droits spéciaux (setuid ou setgid) et leur préférer les commandes comme su ou sudo, qui peuvent être surveillées.
+
 ### R60 : Utiliser des dépôts de paquets durcis
 
+Lorsque la distribution fournit plusieurs types de dépôts, la préférence doit aller à ceux contenant des paquets faisant l’objet de mesures de durcissement supplémentaires. Entre deux paquets fournissant le même service, ceux faisant l’objet de mesures de durcissement (à la compilation, à l’installation ou dans la configuration par défaut) doivent être privilégiés.
+
+Pour vérifier :
+
+```bash
+cat /etc/apt/sources.list
+```
+
+```
+#deb cdrom:[Debian GNU/Linux 13.1.0 _Trixie_ - Official amd64 NETINST with firmware 20250906-10:22]/ trixie contrib main non-free-firmware
+
+deb http://deb.debian.org/debian/ trixie main non-free-firmware
+deb-src http://deb.debian.org/debian/ trixie main non-free-firmware
+
+deb http://security.debian.org/debian-security trixie-security main non-free-firmware
+deb-src http://security.debian.org/debian-security trixie-security main non-free-firmware
+
+# trixie-updates, to get updates before a point release is made;
+# see https://www.debian.org/doc/manuals/debian-reference/ch02.en.html#_updates_and_backports
+deb http://deb.debian.org/debian/ trixie-updates main non-free-firmware
+deb-src http://deb.debian.org/debian/ trixie-updates main non-free-firmware
+[...]
+```
+
+Nous utilisons les dépôts officiels pour la version Trixie de Debian 13.
+Le gestionnaire de paquets a visibilité sur les paquets de la liste `main` mais également `non-free-firmware`. Ce dernier ne peut pas être retiré car il assure que certains drivers propriétaires soient présents sur le système et que les appareils correspondants soient bien reconnus et utilisables par le système.
+
 ### R64 : Configurer les privilèges des services
+
+
 
 ### R65 : Cloisonner les services
 
@@ -1003,25 +1160,47 @@ Il est recommandé d’utiliser les fonctionnalités de Mandatory Access Control
 ### Scan
 
 ## Recommandations E
-### R4 :
-### R6 :
-### R15 :
-### R16 :
-### R17 :
-### R18 :
-### R19 :
-### R20 :
-### R21 :
-### R22 :
-### R23 :
-### R24 :
-### R25 :
-### R26 :
-### R27 :
-### R46 :
-### R47 :
-### R48 :
-### R49 :
-### R66 :
-### R76 :
-### R77 :
+
+### R4 : Remplacer les clés préchargées
+
+### R6 : Protéger les paramètres de ligne de commande du noyau et l’initramfs
+
+### R15 : Paramétrer les options de compilation pour la gestion de la mémoire
+
+### R16 : Paramétrer les options de compilation pour les structures de données du noyau
+
+### R17 : Paramétrer les options de compilation pour l’allocateur mémoire
+
+### R18 : Paramétrer les options de compilation pour la gestion des modules noyau
+
+### R19 : Paramétrer les options de compilation pour les évènements anormaux
+
+### R20 : Paramétrer les options de compilation pour les primitives de sécurité du noyau
+
+### R21 : Paramétrer les options de compilation pour les plugins du compilateur
+
+### R22 : Paramétrer les options de compilation pour la pile réseau
+
+### R23 :Paramétrer les options de compilation pour divers comportements du noyau
+
+### R24 : Paramétrer les options de compilation spécifiques aux architectures 32 bits
+
+### R25 : Paramétrer les options de compilation spécifiques aux architectures x86_64 bits
+
+### R26 : Paramétrer les options de compilation spécifiques aux architectures ARM
+
+### R27 : Paramétrer les options de compilation spécifiques aux architectures ARM 64 bits
+
+### R46 : Activer SELinux avec la politique targeted
+
+### R47 : Confiner les utilisateurs interactifs non privilégiés
+
+### R48 : Paramétrer les variables SELinux
+
+### R49 : Désinstaller les outils de débogage de politique SELinux
+
+### R66 : Durcir les composants de cloisonnement
+
+### R76 : Sceller et vérifier l’intégrité des fichiers
+
+### R77 : Protéger la base de données des scellés
