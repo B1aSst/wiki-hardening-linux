@@ -154,14 +154,613 @@ Dans chaque dépot, le système utilise les listes de distribution de paquets su
 
 ### R61 : Effectuer des mises à jour régulières
 
+Il est recommandé d’avoir une procédure de mise à jour de sécurité régulière et réactive.
+
+```bash
+sudo crontab -e
+```
+
+Ajouter l'entrée suivante :
+
+```
+# Update system every weeks 
+0 1 * * 0 apt update && apt upgrade -y && apt autoremove --purge -y
+```
+
 ### R62 : Désactiver les services non nécessaires
+
+Seuls les composants strictement nécessaires au service rendu par le système doivent être installés. Tout service, et particulièrement ceux en écoute active sur le réseau, est un élément sensible. Seuls ceux connus et requis pour le fonctionnement et la maintenance doivent être installés. Il est recommandé de désinstaller les services dont la présence ne peut être justifiée ou de les désactiver si leur désinstallation n’est pas possible.
+
+Pour les distributions sous systemd, la commande suivante permet de lister l’ensemble des services installés sur le système :
+
+```bash
+sudo systemctl list -units --type service
+```
+
+```
+  UNIT                                     LOAD   ACTIVE SUB     DESCRIPTION                                   
+  apparmor.service                         loaded active exited  Load AppArmor profiles
+  console-setup.service                    loaded active exited  Set console font and keymap
+  cron.service                             loaded active running Regular background program processing daemon
+  dbus.service                             loaded active running D-Bus System Message Bus
+  exim4.service                            loaded active running exim Mail Transport Agent
+  getty@tty1.service                       loaded active running Getty on tty1
+  ifup@enp0s3.service                      loaded active exited  ifup for enp0s3
+  ifupdown-pre.service                     loaded active exited  Helper to synchronize boot up for ifupdown
+  keyboard-setup.service                   loaded active exited  Set the console keyboard layout
+  kmod-static-nodes.service                loaded active exited  Create List of Static Device Nodes
+  networking.service                       loaded active exited  Raise network interfaces
+  ssh.service                              loaded active running OpenBSD Secure Shell server
+  systemd-binfmt.service                   loaded active exited  Set Up Additional Binary Formats
+  systemd-journal-flush.service            loaded active exited  Flush Journal to Persistent Storage
+  systemd-journald.service                 loaded active running Journal Service
+  systemd-logind.service                   loaded active running User Login Management
+  systemd-modules-load.service             loaded active exited  Load Kernel Modules
+  systemd-random-seed.service              loaded active exited  Load/Save OS Random Seed
+  systemd-remount-fs.service               loaded active exited  Remount Root and Kernel File Systems
+  systemd-sysctl.service                   loaded active exited  Apply Kernel Variables
+  systemd-timesyncd.service                loaded active running Network Time Synchronization
+  systemd-tmpfiles-setup-dev-early.service loaded active exited  Create Static Device Nodes in /dev gracefully
+  systemd-tmpfiles-setup-dev.service       loaded active exited  Create Static Device Nodes in /dev
+  systemd-tmpfiles-setup.service           loaded active exited  Create System Files and Directories
+  systemd-udev-load-credentials.service    loaded active exited  Load udev Rules from Credentials
+  systemd-udev-trigger.service             loaded active exited  Coldplug All udev Devices
+  systemd-udevd.service                    loaded active running Rule-based Manager for Device Events and Files
+  systemd-user-sessions.service            loaded active exited  Permit User Sessions
+  user-runtime-dir@1001.service            loaded active exited  User Runtime Directory /run/user/1001
+  user@1001.service                        loaded active running User Manager for UID 1001
+  wpa_supplicant.service                   loaded active running WPA supplicant
+  wtmpdb-update-boot.service               loaded active exited  Write boot and shutdown times into wtmpdb
+
+Legend: LOAD   → Reflects whether the unit definition was properly loaded.
+        ACTIVE → The high-level unit activation state, i.e. generalization of SUB.
+        SUB    → The low-level unit activation state, values depend on unit type.
+
+32 loaded units listed. Pass --all to see loaded but inactive units, too.
+To show all installed unit files use 'systemctl list-unit-files'.
+```
+
+Les services couramment installés sur les distributions sont :
+* les services d’auto-configuration, tels DHCP 24 ou ZeroConf 25 , outre le fait qu’ils peuvent perturber le réseau sur lequel ils sont connectés, reçoivent des éléments dont la légitimité est difficile à assurer. Sauf besoin opérationnel, ceux-ci ne devraient pas s’exécuter sur un serveur ;
+* les services de RPC (portmap, rpc.statd, rpcbind...) ne sont en pratique utilisés que pour un serveur NFS ;
+* les services bureautiques comme dbus, hald, ConsoleKit, CUPS ou PolicyKit ne devraient pas s’exécuter sur un serveur ;
+* le service avahi, utilisé pour la publication et la découverte automatique de services sur le réseau. Sauf besoin opérationnel, celui-ci ne devrait pas s’exécuter sur un serveur ;
+* le serveur X, rarement utile sur un serveur.
+
+On peut par la suite désactiver les services non nécessaires comme suit :
+
+```bash
+sudo systemctl stop exim4.service
+sudo systemctl disable exim4.service
+sudo systemctl stop wpa_supplicant.service
+sudo systemctl disable wpa_supplicant.service
+```
 
 ### R68 : Protéger les mots de passe stockés
 
+Tout mot de passe doit être protégé par des mécanismes cryptographiques évitant de les exposer en clair à un attaquant. Pour cela, se référer à la section 4.6 Stockage de mots de passe du guide Recommandations relatives à l’authentification multifacteur et aux mots de passe.
+
+PAM peut être configuré afin d’utiliser yescrypt en ajoutant dans le fichier `/etc/pam.d/common-password` la directive suivante :
+
+```bash
+sudo nano /etc/pam.d/common-password
+```
+
+```
+password	required			pam_unix.so obscure yescrypt rounds=11
+```
+
+On s'assurera par la suite que les mots de passe des utilisateurs et des éventuels comptes de services concernés soient changés :
+
+```
+sudo passwd admin-gmorice
+```
+
 ### R80 : Réduire la surface d’attaque des services réseau
+
+Tous les services réseau doivent être en écoute sur les interfaces réseau adéquates.
+
+La commande suivante permet de lister l’ensemble des services en écoute sur le réseau :
+
+```bash
+sudo apt install sockstat
+sudo sockstat
+```
+
+On obtient :
+
+```
+USER     PROCESS              PID      PROTO  SOURCE ADDRESS            FOREIGN ADDRESS           STATE
+root     dhcpcd               684      raw    *:17                      *:*                       CLOSED
+root     dhcpcd               684      raw6   :::58                     :::*                      CLOSED
+root     dhcpcd               684      raw6   :::17                     :::*                      CLOSED
+root     dhcpcd               685      raw6   :::58                     :::*                      CLOSED
+root     sshd                 774      tcp4   *:22                      *:*                       LISTEN
+root     sshd                 774      tcp6   :::22                     :::*                      LISTEN
+root     dhcpcd               1042     udp6   fe80::c3f:30f8:ab8a:b8cc:546 :::*                      CLOSED
+root     dhcpcd               1058     udp6   fd17:625c:f037:2:871f:48a2:c774:d18:546 :::*                      CLOSED
+root     dhcpcd               1109     udp4   10.0.2.15:68              *:*                       CLOSED
+root     sshd-session         1117     tcp4   10.0.2.15:22              10.0.2.2:54538            ESTABLISHED
+root     sshd-session         1140     tcp4   10.0.2.15:22              10.0.2.2:54538            ESTABLISHED
+root     dhcpcd               1222     udp6   fd17:625c:f037:2:a00:27ff:fefd:b0fa:546 :::*                      CLOSED
+```
+
+On constate que seul le service SSH à une connexion en écoute sur le port 22.
 
 ### Scan
 
+Après application des recommandations de niveau M du guide, on éffectue un nouveau scan Lynis :
+
+```bash
+sudo lynis audit system
+```
+
+Voici les différences constatées :
+
+* Le nombre de services en cours d'exécution ont réduit :
+
+```
+  - Check running services (systemctl)                        [ DONE ]
+        Result: found 9 running services
+  - Check enabled services at boot (systemctl)                [ DONE ]
+        Result: found 15 enabled services
+```
+
+* Le nombre d'exécutable impactés par au moins un bit d'exécution a diminué :
+
+```
+  - Total without nodev:4 noexec:7 nosuid:2 ro or noexec (W^X): 7 of total 24
+```
+
+* Plus aucun service de gestion d'e-mail n'est en cours d'exécution :
+
+```
+[+] Software: e-mail and messaging
+------------------------------------
+
+```
+
+* Par effet de bord, une réduction du nombre de processus non protégés par AppArmor :
+
+```
+    - Checking AppArmor status                                [ ENABLED ]
+        Found 33 unconfined processes
+```
+
 ## Recommandations I
 
-### R2 : Configurer le BIOS/UEFI
+### R2 : Configurer le BIOS/UEFI
+
+Il est conseillé d’appliquer les recommandations de la configuration du BIOS/UEFI
+mentionnées dans la note technique « Recommandations de configuration matérielle
+de postes clients et serveurs x86 ».
+
+
+
+
+### R3 : Activer le démarrage sécurisé UEFI
+Il est recommandé d’activer la configuration du démarrage sécurisé UEFI associée à
+la distribution.
+
+
+
+
+### R5 : Configurer un mot de passe pour le chargeur de démarrage
+Un chargeur de démarrage permettant de protéger son démarrage par mot de passe
+est à privilégier. Ce mot de passe doit empêcher un utilisateur quelconque de modi-
+fier ses options de configuration.
+
+Pour GRUB :
+
+```bash
+sudo grub-mkpasswd-pbkdf2
+```
+
+Entrer le mot de passe et copier le hash généré :
+
+```bash
+PBKDF2 hash of your password is <hash here>
+```
+
+Ajouter les lignes suivantes dans le fichier `/etc/grub.d/40_custom` :
+
+```
+set superusers="gleguellec"
+password_pbkdf2 gleguellec <paste the hash here>
+```
+
+Puis éditer le fichier `/etc/default/grub` :
+
+```bash
+sudo nano /etc/default/grub
+```
+
+Ajouter ou modifier la ligne suivante :
+
+```bash
+GRUB_DISABLE_RECOVERY="true"
+```
+
+Enfin, mettre à jour la configuration de GRUB :
+
+```bash
+sudo update-grub
+```
+
+### R8 : Paramétrer les options de configuration de la mémoire
+
+
+### R9 : Paramétrer les options de configuration du noyau
+
+La liste ci-dessous présente les options de configuration du noyau recommandées.
+
+Editer le fichier `/etc/sysctl.conf` :
+
+```bash
+# Restreint l'accès au buffer dmesg (équivalent à CONFIG_SECURITY_DMESG_RESTRICT=y)
+kernel.dmesg_restrict=1
+# Cache les adresses noyau dans /proc et les différentes autres interfaces, 
+# y compris aux utilisateurs privilégiés
+kernel.kptr_restrict=2
+# Spécifie explicitement l'espace d'identifiants de processus supporté par le noyau, 
+# 65 536 étant une valeur donnée à titre d'exemple
+kernel.pid_max=65536
+# Restreint l'utilisation du sous -système perf
+kernel.perf_cpu_time_max_percent=1
+kernel.perf_event_max_sample_rate=1
+# Interdit l'accès non privilégié à l'appel système perf_event_open (). 
+# Avec une valeur plus grande que 2, on impose la possession de CAP_SYS_ADMIN, 
+# pour pouvoir recueillir les évènements perf.
+kernel.perf_event_paranoid=2
+# Active l'ASLR
+kernel.randomize_va_space=2
+# Désactive les combinaisons de touches magiques (Magic System Request Key)
+kernel.sysrq=0
+# Restreint l'usage du BPF noyau aux utilisateurs privilégiés
+kernel.unprivileged_bpf_disabled=1
+# Arrête complètement le système en cas de comportement inattendu du noyau Linux
+kernel.panic_on_oops=1
+```
+
+Pour appliquer les modifications :
+```bash
+sudo sysctl -p
+```
+
+### R11 : Activer et configurer le LSM Yama
+Il est recommandé de charger le module de sécurité Yama lors du démarrage, par
+exemple en passant la directive security=yama au noyau, et d’affecter à l’option de
+configuration du noyau kernel.yama.ptrace_scope une valeur au moins égale à 1.
+
+Editer le fichier `/etc/default/grub` :
+
+Ajouter ou modifier la ligne suivante :
+
+```bash
+# On ajoute security=yama
+GRUB_CMDLINE_LINUX_DEFAULT="quiet security=yama"
+```
+
+```bash
+sudo update-grub
+```
+
+Editer le fichier `/etc/sysctl.conf` :
+```bash
+kernel.yama.ptrace_scope=1
+```
+
+Pour appliquer les modifications :
+```bash
+sudo sysctl -p
+```
+
+### R12 : Paramétrer les options de configuration du réseau IPv4
+La liste ci-dessous présente les options de configuration du réseau IPv4 pour un hôte
+« serveur » typique qui n’effectue pas de routage et ayant une configuration IPv4
+minimaliste (adressage statique).
+
+Editer le fichier `/etc/sysctl.conf` :
+
+```bash
+# Atténuation de l'effet de dispersion du JIT noyau au coût d'un compromis sur
+# les performances associées.
+net.core.bpf_jit_harden=2
+# Pas de routage entre les interfaces. Cette option est spéciale et peut
+# entrainer des modifications d'autres options. En plaçant cette option au plus
+# tôt , on s'assure que la configuration des options suivantes ne change pas.
+net.ipv4.ip_forward=0
+# Considère comme invalides les paquets reçus de l'extérieur ayant comme source
+# le réseau 127/8.
+net.ipv4.conf.all.accept_local=0
+# Refuse la réception de paquet ICMP redirect. Le paramétrage suggéré de cette
+# option est à considérer fortement dans le cas de routeurs qui ne doivent pas
+# dépendre d'un élément extérieur pour déterminer le calcul d'une route. Même
+# pour le cas de machines non -routeurs , ce paramétrage prémunit contre les
+# détournements de trafic avec des paquets de type ICMP redirect.
+net.ipv4.conf.all.accept_redirects=0
+net.ipv4.conf.default.accept_redirects=0
+net.ipv4.conf.all.secure_redirects=0
+net.ipv4.conf.default.secure_redirects=0
+net.ipv4.conf.all.shared_media=0
+net.ipv4.conf.default.shared_media=0
+# Refuse les informations d'en -têtes de source routing fournies par le paquet
+# pour déterminer sa route.
+net.ipv4.conf.all.accept_source_route=0
+net.ipv4.conf.default.accept_source_route=0
+# Empêche le noyau Linux de gérer la table ARP globalement. Par défaut , il peut
+# répondre à une requête ARP d'une interface X avec les informations d'une
+# interface Y. Ce comportement est problématique pour les routeurs et les
+# équipements d'un système en haute disponibilité (VRRP ...).
+net.ipv4.conf.all.arp_filter=1
+# Ne répond aux sollicitations ARP que si l'adresse source et destination sont sur
+# le même réseau et sur l'interface sur laquelle le paquet a été reçu. Il est à
+# noter que la configuration de cette option est à étudier selon le cas d'usage.
+net.ipv4.conf.all.arp_ignore=2
+# Refuse le routage de paquet dont l'adresse source ou destination est celle de la
+# boucle locale. Cela interdit l'émission de paquet ayant comme source 127/8.
+net.ipv4.conf.all.route_localnet=0
+# Ignore les sollicitations de type gratuitous ARP. Cette configuration est
+# efficace contre les attaques de type ARP poisoning mais ne s'applique qu 'en
+# association avec un ou plusieurs proxy ARP maîtrisés. Elle peut également être
+# problématique sur un réseau avec des équipements en haute disponibilité (VRRP ...)
+net.ipv4.conf.all.drop_gratuitous_arp=1
+# Vérifie que l'adresse source des paquets reçus sur une interface donnée aurait
+# bien été contactée via cette même interface. À défaut , le paquet est ignoré.
+# Selon l'usage , la valeur 1 peut permettre d'accroître la vérification à
+# l'ensemble des interfaces , lorsque l'équipement est un routeur dont le calcul de
+# routes est dynamique. Le lecteur intéressé est renvoyé à la RFC3704 pour tout
+# complément concernant cette fonctionnalité.
+net.ipv4.conf.default.rp_filter=1
+net.ipv4.conf.all.rp_filter=1
+# Cette option ne doit être mise à 1 que dans le cas d'un routeur , car pour ces
+# équipements l'envoi de ICMP redirect est un comportement normal. Un équipement
+# terminal n'a pas de raison de recevoir un flux dont il n'est pas destinataire et
+# donc d'émettre un paquet ICMP redirect.
+net.ipv4.conf.default.send_redirects=0
+net.ipv4.conf.all.send_redirects=0
+# Ignorer les réponses non conformes à la RFC 1122
+net.ipv4.icmp_ignore_bogus_error_responses =1
+# Augmenter la plage pour les ports éphémères
+net.ipv4.ip_local_port_range=32768 65535
+# RFC 1337
+net.ipv4.tcp_rfc1337=1
+# Utilise les SYN cookies. Cette option permet la prévention d'attaque de
+# type SYN flood.
+net.ipv4.tcp_syncookies=1
+```
+
+Pour appliquer les modifications :
+```bash
+sudo sysctl -p
+```
+
+### R13 : Désactiver le plan IPv6
+Quand IPv6 n’est pas utilisé, il est recommandé de désactiver la pile IPv6.
+
+Editer le fichier `/etc/default/grub` :
+```bash
+sudo nano /etc/default/grub
+```
+
+Ajouter ou modifier la ligne suivante :
+
+```bash
+# On ajoute ipv6.disable=1
+GRUB_CMDLINE_LINUX_DEFAULT="ipv6.disable=1"
+```
+
+```bash
+sudo update-grub
+```
+
+Editer le fichier `/etc/sysctl.conf` :
+```bash
+net.ipv6.conf.default.disable_ipv6=1
+net.ipv6.conf.all.disable_ipv6=1
+```
+
+### R28 : Partitionnement type
+### R32 : Expirer les sessions utilisateur locales
+### R33 : Assurer l'imputabilité des actions d'administration
+### R34 : Désactiver les comptes de service
+### R35 : Utiliser des comptes de service uniques et exclusifs
+### R39 : Modifier les directives de configuration sudo
+### R40 : tiliser des utilisateurs cibles non-privilégiés pour les commandes sudo
+### R42 : Bannir les négations dans les spécifications sudo
+### R43 : Préciser les arguments dans les spécifications sudo
+### R44 : Editer les fichiers de manière sécurisée avec sudo
+### R50 : Restreindre les droits d'accès aux fichiers et aux répertoires sensibles
+### R55 : Séparer les répertoires temporaires des utilisateurs
+### R63 : Désactiver les fonctionnalités des services non essentielles
+### R67 : Sécuriser les authentifications distante par PAM
+### R69 : Sécuriser les accès aux bases utilisateur distantes
+### R70 : Séparer les comptes système et d'administrateur de l'annuaire
+### R74 : Durcir le service de messagerie locale
+### R75 : Configurer un alias de messagerie des comptes de service
+### R79 : Durcir et surveiller les services exposés
+
+## Recommandations R
+
+### R1 : Choisir et configurer son matériel
+
+Il est conseillé d’appliquer les recommandations du support matériel mentionnées dans la note technique « Recommandations de configuration matérielle de postes clients et serveurs x86 ».
+
+### R7 : Activer l’IOMMU
+
+Il est recommandé d’activer l’IOMMU en ajoutant la directive iommu=force à la liste des paramètres du noyau lors du démarrage en plus de celles déjà présentes dans les fichiers de configuration du chargeur de démarrage.
+
+Pour modifier les paramètres de démarrage du noyau de manière permanente :
+
+```bash
+sudo nano /etc/default/grub
+```
+
+Ajouter à la fin de la ligne de la variable `GRUB_CMDLINE_LINUX_DEFAULT` le paramètre `iommu=force` :
+
+```
+GRUB_CMDLINE_LINUX_DEFAULT="quiet iommu=force"
+```
+
+Mettre à jour la configuration de grub :
+
+```bash
+sudo update-grub
+```
+
+Redémarrer et vérifier que le paramètre est bien appliqué au démarrage en appuyant sur e lors de l'écran de démarrage grub puis en vérifiant la présence du paramètre à la fin de la ligne `linux   /boot/vmlinuz-[...]`:
+
+```
+sudo shutdown -r now
+```
+
+### R10 : Désactiver le chargement des modules noyau
+
+Il est recommandé de bloquer le chargement des modules noyau par l’activation de l’option de configuration du noyau kernel.modules_disabled.
+
+L’option de configuration du noyau permettant de bloquer le chargement des modules noyau est présentée telle que rencontrée dans le fichier de configuration `/etc/sysctl.conf` :
+
+```bash
+sudo nano /etc/sysctl.conf
+```
+
+```
+# Interdit le chargement des modules noyau (sauf ceux déjà chargés à ce point)
+kernel.modules_disabled=1
+```
+
+Appliquer les modifications :
+
+```bash
+sudo sysctl -p
+```
+
+Des modules noyau peuvent être définis pour être chargés au démarrage, avant que l’option de configuration du noyau Linux kernel.modules_disabled ne soit active. La liste est définie dans /etc/modules. La liste des modules chargés sur le système à un moment donné peut être trouvée avec la commande lsmod.
+
+```bash
+sudo lsmod
+```
+
+```
+[sudo] password for admin-gmorice: 
+Module                  Size  Used by
+cfg80211             1392640  0
+rfkill                 40960  2 cfg80211
+8021q                  53248  0
+garp                   16384  1 8021q
+stp                    12288  1 garp
+mrp                    20480  1 8021q
+llc                    16384  2 stp,garp
+binfmt_misc            28672  1
+intel_rapl_msr         20480  0
+intel_rapl_common      53248  1 intel_rapl_msr
+intel_uncore_frequency_common    16384  0
+intel_pmc_core        122880  0
+intel_vsec             20480  1 intel_pmc_core
+pmt_telemetry          16384  1 intel_pmc_core
+[...]
+```
+
+Les modules et drivers actuellement listés étant essentiels au bon fonctionement du système nous ne retirerons pas de modules à ceux de la liste des modules chargés au démarrage.
+
+### R29 : Restreindre les accès au dossier /boot
+
+Lorsque c’est possible, il est recommandé de ne pas monter automatiquement la partition /boot.
+Dans tous les cas, l’accès au dossier /boot doit être uniquement autorisé pour l’utilisateur root.
+
+On applique les bonnes permissions à `/boot` :
+
+```bash
+sudo chmod 700 /boot
+sudo chown root:root /boot
+```
+
+Idéalement, on ajouterait un paramètre au montage de `/boot` dans le fichier `/etc/fstab` pour rendre son montage non automatique au démarrage.
+
+Ici, l'espace /boot est inclu dans le même système de fichiers que la racine `/` il n'y a donc pas possibilité de lui appliquer des paramètres différents.
+
+### R36 : Modifier la valeur par défaut de UMASK
+
+La valeur par défaut de UMASK des shells doit être positionnée à 0077 pour per mettre un accès au fichier ou au répertoire créé en lecture et écriture uniquement à l’utilisateur propriétaire. Celle-ci peut être spécifiée dans le fichier de configuration /etc/profile que la plupart des shells (bash, dash, ksh...) utiliseront.
+
+```bash
+sudo nano /etc/profile
+```
+
+Ajouter la ligne :
+
+```
+umask 0077
+```
+
+Puis se déconnecter et se reconnecter à la machine pour créer un nouveau shell appliquant le paramètre.
+
+La valeur par défaut de UMASK des services doit être étudiée au cas par cas mais devrait généralement être à 0027 (ou plus restrictif). Ceci permet un accès au fichier ou au répertoire créé en lecture uniquement à l’utilisateur propriétaire et à son groupe et un accès en écriture au propriétaire. Pour les services systemd, cette valeur peut être spécifiée dans le fichier de configuration du service avec la directive UMask=0027.
+
+Exemple sur un service systemd :
+
+```bash
+sudo nano /etc/systemd/system/example.service
+```
+
+Ajouter :
+
+```
+[Service]
+UMask=0027
+[...]
+```
+
+### R37 : Utiliser des fonctionnalités de contrôle d’accès obligatoire MAC
+
+Il est recommandé d’utiliser les fonctionnalités de Mandatory Access Control ou contrôle d’accès obligatoire (MAC) en plus du traditionnel modèle utilisateur Unix, Discretionary Access Control ou contrôle d’accès discrétionnaire (DAC), voire éventuellement de les combiner avec des mécanismes de cloisonnement.
+
+### R38 : Créer un groupe dédié à l’usage de sudo
+
+### R41 : Limiter l’utilisation de commandes nécessitant la directive EXEC
+
+### R45 : Activer les profils de sécurité AppArmor
+
+### R51 : Changer les secrets et droits d’accès dès l’installation
+
+### R57 : Éviter l’usage d’exécutables avec les droits spéciaux setuid root et setgid root
+
+### R60 : Utiliser des dépôts de paquets durcis
+
+### R64 : Configurer les privilèges des services
+
+### R65 : Cloisonner les services
+
+### R71 : Mettre en place un système de journalisation
+
+### R72 : Mettre en place un système de journalisation
+
+### R73 : Journaliser l’activité système avec auditd
+
+### R78 : Cloisonner les services réseau
+
+### Scan
+
+## Recommandations E
+### R4 :
+### R6 :
+### R15 :
+### R16 :
+### R17 :
+### R18 :
+### R19 :
+### R20 :
+### R21 :
+### R22 :
+### R23 :
+### R24 :
+### R25 :
+### R26 :
+### R27 :
+### R46 :
+### R47 :
+### R48 :
+### R49 :
+### R66 :
+### R76 :
+### R77 :
