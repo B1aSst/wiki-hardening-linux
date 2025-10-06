@@ -12,7 +12,7 @@ Après avoir élevé nos privilèges en tant que “root“ nous exécutons cett
 sudo apt update && apt install debsecan && debsecan --suite $(lsb_release --codename --short) --only-fixed --format detail
 ```
 
-Cette commande ne nous donne rien car les paquets ont l'air d'être déjà à jours dès l’installation.
+Cette commande ne nous donne rien car les paquets sont déjà à jours dès l’installation.
 
 On va maintenant utiliser l'outil Lynis qui va nous permettre d'auditer le système. Pour ce faire, nous utilisons cette commande :
 

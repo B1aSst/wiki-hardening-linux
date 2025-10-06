@@ -16,6 +16,7 @@ nav:
       - Guide ANSSI: ./hardening/guide-anssi.md
       - ANSSI OpenSSH: ./hardening/anssi-openssh.md
       - Guide Admin Debian: ./hardening/guide-admin-debian.md
+      - Debian apparmor: ./hardening/debian-apparmor.md
 markdown_extensions:
   - admonition
   - pymdownx.highlight
