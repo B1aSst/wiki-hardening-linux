@@ -289,6 +289,44 @@ On constate que seul le service SSH à une connexion en écoute sur le port 22.
 
 ### Scan
 
+Après application des recommandations de niveau M du guide, on éffectue un nouveau scan Lynis :
+
+```bash
+sudo lynis audit system
+```
+
+Voici les différences constatées :
+
+* Le nombre de services en cours d'exécution ont réduit :
+
+```
+  - Check running services (systemctl)                        [ DONE ]
+        Result: found 9 running services
+  - Check enabled services at boot (systemctl)                [ DONE ]
+        Result: found 15 enabled services
+```
+
+* Le nombre d'exécutable impactés par au moins un bit d'exécution a diminué :
+
+```
+  - Total without nodev:4 noexec:7 nosuid:2 ro or noexec (W^X): 7 of total 24
+```
+
+* Plus aucun service de gestion d'e-mail n'est en cours d'exécution :
+
+```
+[+] Software: e-mail and messaging
+------------------------------------
+
+```
+
+* Par effet de bord, une réduction du nombre de processus non protégés par AppArmor :
+
+```
+    - Checking AppArmor status                                [ ENABLED ]
+        Found 33 unconfined processes
+```
+
 ## Recommandations I
 
 ### R2 : Configurer le BIOS/UEFI
