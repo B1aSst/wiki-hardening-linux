@@ -291,4 +291,74 @@ On constate que seul le service SSH à une connexion en écoute sur le port 22.
 
 ## Recommandations I
 
-### R2 : Configurer le BIOS/UEFI
+### R2 : Configurer le BIOS/UEFI
+### R3 : Activer le démarrage sécurisé UEFI
+### R5 : Configurer un mot de passe pour le chargeur de démarrage
+### R8 : Paramétrer les options de configuration de la mémoire
+### R9 : Paramétrer les options de configuration du noyau
+### R11 : Activer et configurer le LSM Yama
+### R12 : Paramétrer les options de configuration du réseau IPv4
+### R13 : Désactiver le plan IPv6
+### R28 : Partitionnement type
+### R32 : Expirer les sessions utilisateur locales
+### R33 : Assurer l'imputabilité des actions d'administration
+### R34 : Désactiver les comptes de service
+### R35 : Utiliser des comptes de service uniques et exclusifs
+### R39 : Modifier les directives de configuration sudo
+### R40 : tiliser des utilisateurs cibles non-privilégiés pour les commandes sudo
+### R42 : Bannir les négations dans les spécifications sudo
+### R43 : Préciser les arguments dans les spécifications sudo
+### R44 : Editer les fichiers de manière sécurisée avec sudo
+### R50 : Restreindre les droits d'accès aux fichiers et aux répertoires sensibles
+### R55 : Séparer les répertoires temporaires des utilisateurs
+### R63 : Désactiver les fonctionnalités des services non essentielles
+### R67 : Sécuriser les authentifications distante par PAM
+### R69 : Sécuriser les accès aux bases utilisateur distantes
+### R70 : Séparer les comptes système et d'administrateur de l'annuaire
+### R74 : Durcir le service de messagerie locale
+### R75 : Configurer un alias de messagerie des comptes de service
+### R79 : Durcir et surveiller les services exposés
+
+## Recommandations R
+### R1 :
+### R7 :
+### R10 :
+### R29 :
+### R36 :
+### R37 :
+### R38 :
+### R41 :
+### R45 :
+### R51 :
+### R57 :
+### R60 :
+### R64 :
+### R65 :
+### R71 :
+### R72 :
+### R73 :
+### R78 :
+
+## Recommandations E
+### R4 :
+### R6 :
+### R15 :
+### R16 :
+### R17 :
+### R18 :
+### R19 :
+### R20 :
+### R21 :
+### R22 :
+### R23 :
+### R24 :
+### R25 :
+### R26 :
+### R27 :
+### R46 :
+### R47 :
+### R48 :
+### R49 :
+### R66 :
+### R76 :
+### R77 :
