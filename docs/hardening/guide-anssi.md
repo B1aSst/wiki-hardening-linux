@@ -329,21 +329,15 @@ Voici les différences constatées :
 
 ## Recommandations I
 
-### R2 : Configurer le BIOS/UEFI
+### R2 : Configurer le BIOS/UEFI
 
 Il est conseillé d’appliquer les recommandations de la configuration du BIOS/UEFI
 mentionnées dans la note technique « Recommandations de configuration matérielle
 de postes clients et serveurs x86 ».
 
-
-
-
 ### R3 : Activer le démarrage sécurisé UEFI
 Il est recommandé d’activer la configuration du démarrage sécurisé UEFI associée à
 la distribution.
-
-
-
 
 ### R5 : Configurer un mot de passe pour le chargeur de démarrage
 Un chargeur de démarrage permettant de protéger son démarrage par mot de passe
@@ -388,7 +382,81 @@ sudo update-grub
 ```
 
 ### R8 : Paramétrer les options de configuration de la mémoire
+Les options de configuration de la mémoire recommandées sont les suivantes.
 
+Les options de configuration de la mémoire détaillées dans cette liste sont à ajouter
+à la liste des paramètres du noyau lors du démarrage en plus de celles déjà présentes
+dans le fichier de configuration du chargeur de démarrage :
+
+`l1tf=full,force` : active sans possibilité de désactivation ultérieure toutes les contre-mesures pour la vulnérabilité L1 Terminal Fault (L1TF) présente sur la plu-
+part des processeurs Intel (en 2018 tout du moins). À noter que cela désactive
+Symmetric MultiThreading (SMT) et peut donc avoir un impact fort sur les per-
+formances du système. Cette option n’est toutefois nécessaire que lorsque le système est susceptible d’être utilisé comme hyperviseur. Si les machines virtuelles sont de confiance, c’est-à-dire avec un système d’exploitation invité à la fois de confiance et protégé contre la vulnérabilité L1TF, cette option n’est pas nécessaire et peut même être remplacée par `l1tf=off` pour maximiser les performances ;
+
+`page_poison=on` : active le poisoning des pages de l’allocateur de pages (buddy
+allocator). Cette fonctionnalité permet de remplir les pages libérées avec des
+motifs lors de leur libération et de vérifier les motifs lors de leur allocation. Ce
+remplissage permet de réduire le risque de fuites d’informations à partir des don-
+nées libérées ;
+
+`pti=on` : force l’utilisation de Page Table Isolation (PTI) y compris sur les pro-
+cesseurs se prétendant non impactés par la vulnérabilité Meltdown ;
+
+`slab_nomerge=yes` (équivalent à CONFIG_SLAB_MERGE_DEFAULT=n) : désactive la
+fusion de caches slabs (allocations mémoire dynamiques) de taille identique.
+Cette fonctionnalité permet de différentier les allocations entre les différents caches slabs, et complique fortement les méthodologies de pétrissage du tas (heap
+massaging) en cas de heap overflow ;
+
+`slub_debug=FZP` : active certaines options de vérification des caches slabs (alloca-
+tions mémoire dynamiques) :
+> F active les tests de cohérence des métadonnées des caches slabs,
+> Z active le Red Zoning ; dans un cache slab, ajoute une zone rouge après chaque
+objet afin de détecter des écritures après celui-ci. Il est important de noter que
+la valeur utilisée pour la zone rouge n’est pas aléatoire et qu’il s’agit donc d’un
+durcissement bien plus faible que l’utilisation de véritables canaris,
+> P active le poisoning des objets et du padding, c’est-à-dire provoque une erreur
+lors de l’accès aux zones empoisonnées ;
+
+`spec_store_bypass_disable=seccomp` : force le système à utiliser la contre-mesure
+par défaut (sur un système x86 supportant seccomp) pour la vulnérabilité Spectre
+v4 (Speculative Store Bypass) ;
+
+`spectre_v2=on` : force le système à utiliser une contre-mesure pour la vulnérabilité
+Spectre v2 (Branch Target Injection). Cette option active spectre_v2_user=on
+qui évite les attaques Single Threaded Indirect Branch Predictors (STIBP)
+et Indirect Branch Prediction Barrier 12(IBPB) ;
+
+`mds=full,nosmt` : force le système à utiliser Microarchitectural Data Sampling
+(MDS) pour atténuer les vulnérabilités des processeurs Intel. L’option mds=full,
+qui laisse Symmetric MultiThreading (SMT) activé, n’est donc pas une atténua-
+tion complète. Cette atténuation nécessite une mise à jour du microcode Intel
+et atténue également la vulnérabilité TSX Asynchronous Abort (TAA) du proces-
+seur Intel sur les systèmes affectés par MDS ;
+
+`mce=0` : force un kernel panic sur les erreurs non corrigées signalées par le sup-
+port Machine Check. Sinon, certaines d’entre elles provoquent uniquement l’en-
+voi d’un SIGBUS, permettant potentiellement à un processus malveillant de conti-
+nuer à essayer d’exploiter une vulnérabilité par exemple Rowhammer ;
+
+`page_alloc.shuffle=1` (équivalent à CONFIG_SHUFFLE_PAGE_ALLOCATOR=y) : ac-
+tive le Page allocator randomization qui améliore les performances pour l’uti-
+lisation du direct-mapped memory-side-cache mais réduit la prévisibilité des al-
+locations de page et complète ainsi SLAB_FREELIST_RANDOM ;
+
+`rng_core.default_quality=500` : augmente la confiance dans HWRNG du TPM
+pour une initialisation robuste et rapide du CSPRNG de Linux en créditant la moitié
+de l’entropie qu’il fournit.
+
+Editer le fichier `/etc/default/grub` :
+```bash
+sudo nano /etc/default/grub
+```
+
+Ajouter ou modifier la ligne suivante :
+```bash
+# On ajoute les options de configuration de la mémoire
+GRUB_CMDLINE_LINUX_DEFAULT="quiet l1tf=full,force npage_poison=on pti=on slab_nomerge=yes slub_debug=FZP spec_store_bypass_disable=seccomp spectre_v2=on mds=full,nosmt mce=0 page_alloc.shuffle=1 rng_core.default_quality=500"
+```
 
 ### R9 : Paramétrer les options de configuration du noyau
 
@@ -608,10 +676,58 @@ système de journalisation [7].
 ### R34 : Désactiver les comptes de service
 ### R35 : Utiliser des comptes de service uniques et exclusifs
 ### R39 : Modifier les directives de configuration sudo
-### R40 : tiliser des utilisateurs cibles non-privilégiés pour les commandes sudo
+
+Les directives suivantes doivent être activées par défaut :
+`noexec` appliquer le tag NOEXEC par défaut sur les commandes
+`requiretty` imposer à l’utilisateur d’avoir un tty de login
+`use_pty` utiliser un pseudo-tty lorsqu’une commande est exécutée
+`umask=0077` forcer umask à un masque plus restrictif
+`ignore_dot` ignorer le « . » dans $PATH
+`env_reset` réinitialiser les variables d’environnement
+
+Editer le fichier `/etc/sudoers` :
+
+```bash
+sudo nano /etc/sudoers
+```
+
+Ajouter ou modifier les lignes suivantes :
+
+```bash
+Defaults noexec ,requiretty ,use_pty ,umask =0027
+Defaults ignore_dot ,env_reset
+```
+
+Il est ensuite possible de surcharger la valeur par défaut si nécessaire lors de la définition d’un droit (1) ou pour tout un groupe (2).
+
+```bash
+myuser ALL = EXEC: /usr/bin/mycommand # (1)
+Defaults :% admins !noexec # (2
+```
+
+### R40 : Utiliser des utilisateurs cibles non-privilégiés pour les commandes sudo
+Les utilisateurs cibles d’une règle doivent autant que possible être des utilisateurs
+non privilégiés (c’est-à-dire non root).
+
 ### R42 : Bannir les négations dans les spécifications sudo
+Les spécifications de commande ne doivent pas faire intervenir de négation.
+
 ### R43 : Préciser les arguments dans les spécifications sudo
+Toutes les commandes du fichier de configuration sudoers doivent préciser stricte-
+ment les arguments autorisés à être utilisés pour un utilisateur donné.
+
+Eviter l'usage de wildcards (*) dans les spécifications de commande.
+Spécifier l'absence d'argument par "".
+
 ### R44 : Editer les fichiers de manière sécurisée avec sudo
+
+L'édition d’un fichier par sudo doit être réalisée au travers de l’éditeur de texte
+sudoedit.
+
+```bash
+sudoedit <file>
+```
+
 ### R50 : Restreindre les droits d'accès aux fichiers et aux répertoires sensibles
 ### R55 : Séparer les répertoires temporaires des utilisateurs
 ### R63 : Désactiver les fonctionnalités des services non essentielles
@@ -621,6 +737,7 @@ système de journalisation [7].
 ### R74 : Durcir le service de messagerie locale
 ### R75 : Configurer un alias de messagerie des comptes de service
 ### R79 : Durcir et surveiller les services exposés
+### Scan
 
 ## Recommandations R
 
