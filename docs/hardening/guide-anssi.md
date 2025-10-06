@@ -398,28 +398,28 @@ Editer le fichier `/etc/sysctl.conf` :
 
 ```bash
 # Restreint l'accès au buffer dmesg (équivalent à CONFIG_SECURITY_DMESG_RESTRICT=y)
-kernel.dmesg_restrict =1
+kernel.dmesg_restrict=1
 # Cache les adresses noyau dans /proc et les différentes autres interfaces, 
 # y compris aux utilisateurs privilégiés
-kernel.kptr_restrict =2
+kernel.kptr_restrict=2
 # Spécifie explicitement l'espace d'identifiants de processus supporté par le noyau, 
 # 65 536 étant une valeur donnée à titre d'exemple
-kernel.pid_max =65536
+kernel.pid_max=65536
 # Restreint l'utilisation du sous -système perf
-kernel.perf_cpu_time_max_percent =1
-kernel.perf_event_max_sample_rate =1
+kernel.perf_cpu_time_max_percent=1
+kernel.perf_event_max_sample_rate=1
 # Interdit l'accès non privilégié à l'appel système perf_event_open (). 
 # Avec une valeur plus grande que 2, on impose la possession de CAP_SYS_ADMIN, 
 # pour pouvoir recueillir les évènements perf.
-kernel.perf_event_paranoid =2
+kernel.perf_event_paranoid=2
 # Active l'ASLR
-kernel.randomize_va_space =2
+kernel.randomize_va_space=2
 # Désactive les combinaisons de touches magiques (Magic System Request Key)
-kernel.sysrq =0
+kernel.sysrq=0
 # Restreint l'usage du BPF noyau aux utilisateurs privilégiés
-kernel.unprivileged_bpf_disabled =1
+kernel.unprivileged_bpf_disabled=1
 # Arrête complètement le système en cas de comportement inattendu du noyau Linux
-kernel.panic_on_oops =1
+kernel.panic_on_oops=1
 ```
 
 Pour appliquer les modifications :
@@ -428,6 +428,33 @@ sudo sysctl -p
 ```
 
 ### R11 : Activer et configurer le LSM Yama
+Il est recommandé de charger le module de sécurité Yama lors du démarrage, par
+exemple en passant la directive security=yama au noyau, et d’affecter à l’option de
+configuration du noyau kernel.yama.ptrace_scope une valeur au moins égale à 1.
+
+Editer le fichier `/etc/default/grub` :
+
+Ajouter ou modifier la ligne suivante :
+
+```bash
+# On ajoute security=yama
+GRUB_CMDLINE_LINUX_DEFAULT="quiet security=yama"
+```
+
+```bash
+sudo update-grub
+```
+
+Editer le fichier `/etc/sysctl.conf` :
+```bash
+kernel.yama.ptrace_scope=1
+```
+
+Pour appliquer les modifications :
+```bash
+sudo sysctl -p
+```
+
 ### R12 : Paramétrer les options de configuration du réseau IPv4
 ### R13 : Désactiver le plan IPv6
 ### R28 : Partitionnement type
