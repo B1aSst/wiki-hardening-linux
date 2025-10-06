@@ -154,11 +154,138 @@ Dans chaque dépot, le système utilise les listes de distribution de paquets su
 
 ### R61 : Effectuer des mises à jour régulières
 
+Il est recommandé d’avoir une procédure de mise à jour de sécurité régulière et réactive.
+
+```bash
+sudo crontab -e
+```
+
+Ajouter l'entrée suivante :
+
+```
+# Update system every weeks 
+0 1 * * 0 apt update && apt upgrade -y && apt autoremove --purge -y
+```
+
 ### R62 : Désactiver les services non nécessaires
+
+Seuls les composants strictement nécessaires au service rendu par le système doivent être installés. Tout service, et particulièrement ceux en écoute active sur le réseau, est un élément sensible. Seuls ceux connus et requis pour le fonctionnement et la maintenance doivent être installés. Il est recommandé de désinstaller les services dont la présence ne peut être justifiée ou de les désactiver si leur désinstallation n’est pas possible.
+
+Pour les distributions sous systemd, la commande suivante permet de lister l’ensemble des services installés sur le système :
+
+```bash
+sudo systemctl list -units --type service
+```
+
+```
+  UNIT                                     LOAD   ACTIVE SUB     DESCRIPTION                                   
+  apparmor.service                         loaded active exited  Load AppArmor profiles
+  console-setup.service                    loaded active exited  Set console font and keymap
+  cron.service                             loaded active running Regular background program processing daemon
+  dbus.service                             loaded active running D-Bus System Message Bus
+  exim4.service                            loaded active running exim Mail Transport Agent
+  getty@tty1.service                       loaded active running Getty on tty1
+  ifup@enp0s3.service                      loaded active exited  ifup for enp0s3
+  ifupdown-pre.service                     loaded active exited  Helper to synchronize boot up for ifupdown
+  keyboard-setup.service                   loaded active exited  Set the console keyboard layout
+  kmod-static-nodes.service                loaded active exited  Create List of Static Device Nodes
+  networking.service                       loaded active exited  Raise network interfaces
+  ssh.service                              loaded active running OpenBSD Secure Shell server
+  systemd-binfmt.service                   loaded active exited  Set Up Additional Binary Formats
+  systemd-journal-flush.service            loaded active exited  Flush Journal to Persistent Storage
+  systemd-journald.service                 loaded active running Journal Service
+  systemd-logind.service                   loaded active running User Login Management
+  systemd-modules-load.service             loaded active exited  Load Kernel Modules
+  systemd-random-seed.service              loaded active exited  Load/Save OS Random Seed
+  systemd-remount-fs.service               loaded active exited  Remount Root and Kernel File Systems
+  systemd-sysctl.service                   loaded active exited  Apply Kernel Variables
+  systemd-timesyncd.service                loaded active running Network Time Synchronization
+  systemd-tmpfiles-setup-dev-early.service loaded active exited  Create Static Device Nodes in /dev gracefully
+  systemd-tmpfiles-setup-dev.service       loaded active exited  Create Static Device Nodes in /dev
+  systemd-tmpfiles-setup.service           loaded active exited  Create System Files and Directories
+  systemd-udev-load-credentials.service    loaded active exited  Load udev Rules from Credentials
+  systemd-udev-trigger.service             loaded active exited  Coldplug All udev Devices
+  systemd-udevd.service                    loaded active running Rule-based Manager for Device Events and Files
+  systemd-user-sessions.service            loaded active exited  Permit User Sessions
+  user-runtime-dir@1001.service            loaded active exited  User Runtime Directory /run/user/1001
+  user@1001.service                        loaded active running User Manager for UID 1001
+  wpa_supplicant.service                   loaded active running WPA supplicant
+  wtmpdb-update-boot.service               loaded active exited  Write boot and shutdown times into wtmpdb
+
+Legend: LOAD   → Reflects whether the unit definition was properly loaded.
+        ACTIVE → The high-level unit activation state, i.e. generalization of SUB.
+        SUB    → The low-level unit activation state, values depend on unit type.
+
+32 loaded units listed. Pass --all to see loaded but inactive units, too.
+To show all installed unit files use 'systemctl list-unit-files'.
+```
+
+Les services couramment installés sur les distributions sont :
+* les services d’auto-configuration, tels DHCP 24 ou ZeroConf 25 , outre le fait qu’ils peuvent perturber le réseau sur lequel ils sont connectés, reçoivent des éléments dont la légitimité est difficile à assurer. Sauf besoin opérationnel, ceux-ci ne devraient pas s’exécuter sur un serveur ;
+* les services de RPC (portmap, rpc.statd, rpcbind...) ne sont en pratique utilisés que pour un serveur NFS ;
+* les services bureautiques comme dbus, hald, ConsoleKit, CUPS ou PolicyKit ne devraient pas s’exécuter sur un serveur ;
+* le service avahi, utilisé pour la publication et la découverte automatique de services sur le réseau. Sauf besoin opérationnel, celui-ci ne devrait pas s’exécuter sur un serveur ;
+* le serveur X, rarement utile sur un serveur.
+
+On peut par la suite désactiver les services non nécessaires comme suit :
+
+```bash
+sudo systemctl stop exim4.service
+sudo systemctl disable exim4.service
+sudo systemctl stop wpa_supplicant.service
+sudo systemctl disable wpa_supplicant.service
+```
 
 ### R68 : Protéger les mots de passe stockés
 
+Tout mot de passe doit être protégé par des mécanismes cryptographiques évitant de les exposer en clair à un attaquant. Pour cela, se référer à la section 4.6 Stockage de mots de passe du guide Recommandations relatives à l’authentification multifacteur et aux mots de passe.
+
+PAM peut être configuré afin d’utiliser yescrypt en ajoutant dans le fichier `/etc/pam.d/common-password` la directive suivante :
+
+```bash
+sudo nano /etc/pam.d/common-password
+```
+
+```
+password	required			pam_unix.so obscure yescrypt rounds=11
+```
+
+On s'assurera par la suite que les mots de passe des utilisateurs et des éventuels comptes de services concernés soient changés :
+
+```
+sudo passwd admin-gmorice
+```
+
 ### R80 : Réduire la surface d’attaque des services réseau
+
+Tous les services réseau doivent être en écoute sur les interfaces réseau adéquates.
+
+La commande suivante permet de lister l’ensemble des services en écoute sur le réseau :
+
+```bash
+sudo apt install sockstat
+sudo sockstat
+```
+
+On obtient :
+
+```
+USER     PROCESS              PID      PROTO  SOURCE ADDRESS            FOREIGN ADDRESS           STATE
+root     dhcpcd               684      raw    *:17                      *:*                       CLOSED
+root     dhcpcd               684      raw6   :::58                     :::*                      CLOSED
+root     dhcpcd               684      raw6   :::17                     :::*                      CLOSED
+root     dhcpcd               685      raw6   :::58                     :::*                      CLOSED
+root     sshd                 774      tcp4   *:22                      *:*                       LISTEN
+root     sshd                 774      tcp6   :::22                     :::*                      LISTEN
+root     dhcpcd               1042     udp6   fe80::c3f:30f8:ab8a:b8cc:546 :::*                      CLOSED
+root     dhcpcd               1058     udp6   fd17:625c:f037:2:871f:48a2:c774:d18:546 :::*                      CLOSED
+root     dhcpcd               1109     udp4   10.0.2.15:68              *:*                       CLOSED
+root     sshd-session         1117     tcp4   10.0.2.15:22              10.0.2.2:54538            ESTABLISHED
+root     sshd-session         1140     tcp4   10.0.2.15:22              10.0.2.2:54538            ESTABLISHED
+root     dhcpcd               1222     udp6   fd17:625c:f037:2:a00:27ff:fefd:b0fa:546 :::*                      CLOSED
+```
+
+On constate que seul le service SSH à une connexion en écoute sur le port 22.
 
 ### Scan
 
