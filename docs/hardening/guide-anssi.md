@@ -563,6 +563,48 @@ net.ipv6.conf.all.disable_ipv6=1
 ### R28 : Partitionnement type
 ### R32 : Expirer les sessions utilisateur locales
 ### R33 : Assurer l'imputabilité des actions d'administration
+
+Les actions d’administration nécessitant des privilèges doivent être tracées afin de
+pouvoir identifier l’administrateur à l’origine d’une activité malveillante.
+
+Plusieurs approches permettent de répondre à cette problématique :
+
+- Utiliser des comptes d'administation dédiés et de sudo
+
+Comptes nominatifs d’administration dédiés (local ou distant).
+Secrets d’authentification différents suivant le compte utilisé.
+Désactivation du compte root.
+Utilisation de sudo.
+
+La désactivation d’un compte peut passer par l’invalidation de ce compte au niveau
+de son mot de passe (suppression du champ pw_passwd dans le shadow et shell de
+login à /bin/false).
+
+```bash
+# Verrouillage d'un compte
+usermod -L -e 1 <compte >
+# Désactivation du shell de login
+usermod -s /bin/false <compte >
+```
+
+- Journalisation de la création de tout process
+
+Il est possible de journaliser la création de processus sur le système avec les règles
+auditd suivantes :
+
+Dans le fichier `/etc/audit/rules.d/audit.rules` :
+
+```bash
+-a exit ,always -F arch=b64 -S execve ,execveat
+-a exit ,always -F arch=b32 -S execve ,execveat
+```
+
+Il est important de réaliser que le volume de log généré par cette méthode peut
+être très important en fonction des tâches effectuées sur le système. Il est donc
+conseillé d’utiliser cette méthode en combinaison d’un export de logs régulier
+comme conseillé dans le guide Recommandations de sécurité pour l’architecture d’un
+système de journalisation [7].
+
 ### R34 : Désactiver les comptes de service
 ### R35 : Utiliser des comptes de service uniques et exclusifs
 ### R39 : Modifier les directives de configuration sudo
