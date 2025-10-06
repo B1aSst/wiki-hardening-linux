@@ -1058,25 +1058,47 @@ Le gestionnaire de paquets a visibilité sur les paquets de la liste `main` mais
 ### Scan
 
 ## Recommandations E
-### R4 :
-### R6 :
-### R15 :
-### R16 :
-### R17 :
-### R18 :
-### R19 :
-### R20 :
-### R21 :
-### R22 :
-### R23 :
-### R24 :
-### R25 :
-### R26 :
-### R27 :
-### R46 :
-### R47 :
-### R48 :
-### R49 :
-### R66 :
-### R76 :
-### R77 :
+
+### R4 : Remplacer les clés préchargées
+
+### R6 : Protéger les paramètres de ligne de commande du noyau et l’initramfs
+
+### R15 : Paramétrer les options de compilation pour la gestion de la mémoire
+
+### R16 : Paramétrer les options de compilation pour les structures de données du noyau
+
+### R17 : Paramétrer les options de compilation pour l’allocateur mémoire
+
+### R18 : Paramétrer les options de compilation pour la gestion des modules noyau
+
+### R19 : Paramétrer les options de compilation pour les évènements anormaux
+
+### R20 : Paramétrer les options de compilation pour les primitives de sécurité du noyau
+
+### R21 : Paramétrer les options de compilation pour les plugins du compilateur
+
+### R22 : Paramétrer les options de compilation pour la pile réseau
+
+### R23 :Paramétrer les options de compilation pour divers comportements du noyau
+
+### R24 : Paramétrer les options de compilation spécifiques aux architectures 32 bits
+
+### R25 : Paramétrer les options de compilation spécifiques aux architectures x86_64 bits
+
+### R26 : Paramétrer les options de compilation spécifiques aux architectures ARM
+
+### R27 : Paramétrer les options de compilation spécifiques aux architectures ARM 64 bits
+
+### R46 : Activer SELinux avec la politique targeted
+
+### R47 : Confiner les utilisateurs interactifs non privilégiés
+
+### R48 : Paramétrer les variables SELinux
+
+### R49 : Désinstaller les outils de débogage de politique SELinux
+
+### R66 : Durcir les composants de cloisonnement
+
+### R76 : Sceller et vérifier l’intégrité des fichiers
+
+### R77 : Protéger la base de données des scellés
