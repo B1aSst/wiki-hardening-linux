@@ -292,8 +292,63 @@ On constate que seul le service SSH à une connexion en écoute sur le port 22.
 ## Recommandations I
 
 ### R2 : Configurer le BIOS/UEFI
+
+Il est conseillé d’appliquer les recommandations de la configuration du BIOS/UEFI
+mentionnées dans la note technique « Recommandations de configuration matérielle
+de postes clients et serveurs x86 ».
+
+
+
+
 ### R3 : Activer le démarrage sécurisé UEFI
+Il est recommandé d’activer la configuration du démarrage sécurisé UEFI associée à
+la distribution.
+
+
+
+
 ### R5 : Configurer un mot de passe pour le chargeur de démarrage
+Un chargeur de démarrage permettant de protéger son démarrage par mot de passe
+est à privilégier. Ce mot de passe doit empêcher un utilisateur quelconque de modi-
+fier ses options de configuration.
+
+Pour GRUB :
+
+```bash
+sudo grub-mkpasswd-pbkdf2
+```
+
+Entrer le mot de passe et copier le hash généré :
+
+```bash
+PBKDF2 hash of your password is <hash here>
+```
+
+Ajouter les lignes suivantes dans le fichier `/etc/grub.d/40_custom` :
+
+```
+set superusers="gleguellec"
+password_pbkdf2 gleguellec <paste the hash here>
+```
+
+Puis éditer le fichier `/etc/default/grub` :
+
+```bash
+sudo nano /etc/default/grub
+```
+
+Ajouter ou modifier la ligne suivante :
+
+```bash
+GRUB_DISABLE_RECOVERY="true"
+```
+
+Enfin, mettre à jour la configuration de GRUB :
+
+```bash
+sudo update-grub
+```
+
 ### R8 : Paramétrer les options de configuration de la mémoire
 ### R9 : Paramétrer les options de configuration du noyau
 ### R11 : Activer et configurer le LSM Yama
