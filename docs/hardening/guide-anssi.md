@@ -623,24 +623,165 @@ système de journalisation [7].
 ### R79 : Durcir et surveiller les services exposés
 
 ## Recommandations R
-### R1 :
-### R7 :
-### R10 :
-### R29 :
-### R36 :
-### R37 :
-### R38 :
-### R41 :
-### R45 :
-### R51 :
-### R57 :
-### R60 :
-### R64 :
-### R65 :
-### R71 :
-### R72 :
-### R73 :
-### R78 :
+
+### R1 : Choisir et configurer son matériel
+
+Il est conseillé d’appliquer les recommandations du support matériel mentionnées dans la note technique « Recommandations de configuration matérielle de postes clients et serveurs x86 ».
+
+### R7 : Activer l’IOMMU
+
+Il est recommandé d’activer l’IOMMU en ajoutant la directive iommu=force à la liste des paramètres du noyau lors du démarrage en plus de celles déjà présentes dans les fichiers de configuration du chargeur de démarrage.
+
+Pour modifier les paramètres de démarrage du noyau de manière permanente :
+
+```bash
+sudo nano /etc/default/grub
+```
+
+Ajouter à la fin de la ligne de la variable `GRUB_CMDLINE_LINUX_DEFAULT` le paramètre `iommu=force` :
+
+```
+GRUB_CMDLINE_LINUX_DEFAULT="quiet iommu=force"
+```
+
+Mettre à jour la configuration de grub :
+
+```bash
+sudo update-grub
+```
+
+Redémarrer et vérifier que le paramètre est bien appliqué au démarrage en appuyant sur e lors de l'écran de démarrage grub puis en vérifiant la présence du paramètre à la fin de la ligne `linux   /boot/vmlinuz-[...]`:
+
+```
+sudo shutdown -r now
+```
+
+### R10 : Désactiver le chargement des modules noyau
+
+Il est recommandé de bloquer le chargement des modules noyau par l’activation de l’option de configuration du noyau kernel.modules_disabled.
+
+L’option de configuration du noyau permettant de bloquer le chargement des modules noyau est présentée telle que rencontrée dans le fichier de configuration `/etc/sysctl.conf` :
+
+```bash
+sudo nano /etc/sysctl.conf
+```
+
+```
+# Interdit le chargement des modules noyau (sauf ceux déjà chargés à ce point)
+kernel.modules_disabled=1
+```
+
+Appliquer les modifications :
+
+```bash
+sudo sysctl -p
+```
+
+Des modules noyau peuvent être définis pour être chargés au démarrage, avant que l’option de configuration du noyau Linux kernel.modules_disabled ne soit active. La liste est définie dans /etc/modules. La liste des modules chargés sur le système à un moment donné peut être trouvée avec la commande lsmod.
+
+```bash
+sudo lsmod
+```
+
+```
+[sudo] password for admin-gmorice: 
+Module                  Size  Used by
+cfg80211             1392640  0
+rfkill                 40960  2 cfg80211
+8021q                  53248  0
+garp                   16384  1 8021q
+stp                    12288  1 garp
+mrp                    20480  1 8021q
+llc                    16384  2 stp,garp
+binfmt_misc            28672  1
+intel_rapl_msr         20480  0
+intel_rapl_common      53248  1 intel_rapl_msr
+intel_uncore_frequency_common    16384  0
+intel_pmc_core        122880  0
+intel_vsec             20480  1 intel_pmc_core
+pmt_telemetry          16384  1 intel_pmc_core
+[...]
+```
+
+Les modules et drivers actuellement listés étant essentiels au bon fonctionement du système nous ne retirerons pas de modules à ceux de la liste des modules chargés au démarrage.
+
+### R29 : Restreindre les accès au dossier /boot
+
+Lorsque c’est possible, il est recommandé de ne pas monter automatiquement la partition /boot.
+Dans tous les cas, l’accès au dossier /boot doit être uniquement autorisé pour l’utilisateur root.
+
+On applique les bonnes permissions à `/boot` :
+
+```bash
+sudo chmod 700 /boot
+sudo chown root:root /boot
+```
+
+Idéalement, on ajouterait un paramètre au montage de `/boot` dans le fichier `/etc/fstab` pour rendre son montage non automatique au démarrage.
+
+Ici, l'espace /boot est inclu dans le même système de fichiers que la racine `/` il n'y a donc pas possibilité de lui appliquer des paramètres différents.
+
+### R36 : Modifier la valeur par défaut de UMASK
+
+La valeur par défaut de UMASK des shells doit être positionnée à 0077 pour per mettre un accès au fichier ou au répertoire créé en lecture et écriture uniquement à l’utilisateur propriétaire. Celle-ci peut être spécifiée dans le fichier de configuration /etc/profile que la plupart des shells (bash, dash, ksh...) utiliseront.
+
+```bash
+sudo nano /etc/profile
+```
+
+Ajouter la ligne :
+
+```
+umask 0077
+```
+
+Puis se déconnecter et se reconnecter à la machine pour créer un nouveau shell appliquant le paramètre.
+
+La valeur par défaut de UMASK des services doit être étudiée au cas par cas mais devrait généralement être à 0027 (ou plus restrictif). Ceci permet un accès au fichier ou au répertoire créé en lecture uniquement à l’utilisateur propriétaire et à son groupe et un accès en écriture au propriétaire. Pour les services systemd, cette valeur peut être spécifiée dans le fichier de configuration du service avec la directive UMask=0027.
+
+Exemple sur un service systemd :
+
+```bash
+sudo nano /etc/systemd/system/example.service
+```
+
+Ajouter :
+
+```
+[Service]
+UMask=0027
+[...]
+```
+
+### R37 : Utiliser des fonctionnalités de contrôle d’accès obligatoire MAC
+
+Il est recommandé d’utiliser les fonctionnalités de Mandatory Access Control ou contrôle d’accès obligatoire (MAC) en plus du traditionnel modèle utilisateur Unix, Discretionary Access Control ou contrôle d’accès discrétionnaire (DAC), voire éventuellement de les combiner avec des mécanismes de cloisonnement.
+
+### R38 : Créer un groupe dédié à l’usage de sudo
+
+### R41 : Limiter l’utilisation de commandes nécessitant la directive EXEC
+
+### R45 : Activer les profils de sécurité AppArmor
+
+### R51 : Changer les secrets et droits d’accès dès l’installation
+
+### R57 : Éviter l’usage d’exécutables avec les droits spéciaux setuid root et setgid root
+
+### R60 : Utiliser des dépôts de paquets durcis
+
+### R64 : Configurer les privilèges des services
+
+### R65 : Cloisonner les services
+
+### R71 : Mettre en place un système de journalisation
+
+### R72 : Mettre en place un système de journalisation
+
+### R73 : Journaliser l’activité système avec auditd
+
+### R78 : Cloisonner les services réseau
+
+### Scan
 
 ## Recommandations E
 ### R4 :
