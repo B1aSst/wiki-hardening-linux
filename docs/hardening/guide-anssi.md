@@ -629,6 +629,33 @@ net.ipv6.conf.all.disable_ipv6=1
 ```
 
 ### R28 : Partitionnement type
+
+| Point de montage | Options | Description |
+|-------------------|----------|--------------|
+| `/` | *<sans option>* | Partition racine, contient le reste de l’arborescence |
+| `/boot` | `nosuid,nodev,noexec` <br> *(noauto optionnel)* | Contient le noyau et le chargeur de démarrage. Pas d’accès nécessaire une fois le boot terminé (sauf mise à jour) |
+| `/opt` | `nosuid,nodev` <br> *(ro optionnel)* | Packages additionnels au système. Montage en lecture seule si non utilisé |
+| `/tmp` | `nosuid,nodev,noexec` | Fichiers temporaires. Ne doit contenir que des éléments non exécutables. Nettoyé après redémarrage ou de type *tmpfs* de préférence |
+| `/srv` | `nosuid,nodev` <br> *(noexec,ro optionnels)* | Contient des fichiers servis par un service type Web, FTP… |
+| `/home` | `nosuid,nodev,noexec` | Contient les répertoires HOME des utilisateurs |
+| `/proc` | `hidepid=2` | Contient des informations sur les processus et le système |
+| `/usr` | `nodev` | Contient la majorité des utilitaires et fichiers système |
+| `/var` | `nosuid,nodev,noexec` | Partition contenant des fichiers variables pendant la vie du système (mails, fichiers PID, bases de données d’un service) |
+| `/var/log` | `nosuid,nodev,noexec` | Contient les logs du système |
+| `/var/tmp` | `nosuid,nodev,noexec` | Fichiers temporaires conservés après extinction |
+
+
+Idéalement, on configurerait les paramètres de montage ci-dessus dans le fichier `/etc/fstab`.
+
+Ici, nous n'avons qu'une seule partition `/` et une partition `/boot` dédiée. Il faudrait créer les autres partitions et configurer le montage avec les options recommandées dès l'installation du système.
+
+Dans `/etc/fstab`, on configure le montage de `/boot` comme suit :
+
+```bash
+# <file system> <mount point>   <type>  <options>       <dump>  <pass>
+UUID=xxxx-xxxx  /boot           ext4    defaults,nosuid,nodev,noexec,noauto 0       2
+```
+
 ### R32 : Expirer les sessions utilisateur locales
 ### R33 : Assurer l'imputabilité des actions d'administration
 
@@ -729,11 +756,86 @@ sudoedit <file>
 ```
 
 ### R50 : Restreindre les droits d'accès aux fichiers et aux répertoires sensibles
+Les fichiers et les répertoires sensibles ne doivent être lisibles que par les utilisateurs ayant le strict besoin d’en connaître.
+
+Tous les fichiers sensibles, générés ou installés lors l’installation du système, et ceux qui concourent aux mécanismes d’authentification (certificats d’autorité racine, clés publiques, certificats…) doivent être mis en place dès l’installation du système.
+
 ### R55 : Séparer les répertoires temporaires des utilisateurs
+
+Chaque utilisateur ou application doit posséder son propre répertoire temporaire et
+en disposer exclusivement.
+
+`pam_mktemp` et `pam_namespace` sont deux modules PAM qui permettent de créer des répertoires temporaires exclusifs à chaque utilisateur. (voir R67)
+
 ### R63 : Désactiver les fonctionnalités des services non essentielles
+
+Les fonctionnalités configurées au niveau des services démarrés doivent être limitées
+au strict nécessaire.
+
+```bash
+# Liste l'ensemble des fichiers exécutables pour lesquels un ou plusieurs Linux capabilities ont été activées
+find / -type f -perm /111 -exec getcap {} \; 2>/dev/null
+```
+
 ### R67 : Sécuriser les authentifications distante par PAM
+
+Quand l’authentification se déroule au travers d’une application distante (réseau), le
+protocole d’authentification utilisé par PAM doit être sécurisé (chiffrement du flux,
+authentification du serveur distant, mécanismes d’anti-rejeu…).
+
+`pam_faillock` permet de bloquer temporairement un compte après un certain nombre d’échecs ;
+
+`pam_time` permet de restreindre les accès à une plage horaire ;
+
+`pam_passwdqc` permet d’appliquer des contraintes suivant une politique de complexité de mots de passe ;
+
+`pam_pwquality` permet de tester la robustesse des mots de passe ;
+
+`pam_wheel` permet de restreindre un accès aux utilisateurs membres d’un groupe particulier (wheel par défaut) ;
+
+`pam_mktemp` permet de fournir des répertoires temporaires privés par utilisateur sous /tmp ;
+
+`pam_namespace` permet de créer un espace de noms privés par utilisateur.
+
+Dans le fichier `/etc/pam.d/su` :
+
+```bash
+# Limite l'accès à root via su aux membres du groupe 'wheel'
+auth	required	pam_wheel.so use_uid root_only
+```
+
+Dans le fichier `/etc/pam.d/passwd` :
+
+```bash
+# Au moins 12 caractères de 3 classes différentes parmi les majuscules ,
+# les minuscules, les chiffres et les autres en interdisant la répétition
+# d'un caractère
+
+password required pam_pwquality.so minlen =12 minclass =3 \
+              dcredit =0 ucredit =0 lcredit =0 \
+              ocredit =0 maxrepeat =1
+```
+
+Dans les fichiers `/etc/pam.d/login` et `/etc/pam.d/sshd` :
+```bash
+# Blocage du compte pendant 5 min après 3 échecs
+auth required pam_faillock.so deny=3 unlock_time=300
+```
+
+```bash
+# On ajoute pam_mktemp pour fournir des répertoires temporaires privés par utilisateur
+session	required	pam_mktemp.so umask=0077
+# On ajoute pam_namespace pour créer un espace de noms privés par utilisateur
+session	required	pam_namespace.so
+```
+
 ### R69 : Sécuriser les accès aux bases utilisateur distantes
+Lorsque les bases utilisateur sont stockées sur un serveur réseau distant, NSS doit être configuré pour établir une liaison sécurisée permettant au minimum d’authentifier le serveur et de protéger le canal de communication.
+
 ### R70 : Séparer les comptes système et d'administrateur de l'annuaire
+Il est recommandé de ne pas avoir de recouvrement de compte entre ceux utilisés par le système d’exploitation et ceux utilisés pour administrer l’annuaire.
+L’usage de comptes administrateur d’annuaire pour effectuer des requêtes d’énumération de comptes par NSS doit être prohibé.
+
 ### R74 : Durcir le service de messagerie locale
 ### R75 : Configurer un alias de messagerie des comptes de service
 ### R79 : Durcir et surveiller les services exposés
