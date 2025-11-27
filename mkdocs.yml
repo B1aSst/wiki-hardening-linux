@@ -10,13 +10,13 @@ theme:
     - navigation.sections
     - navigation.tabs
 nav:
-  - Introduction: ./introduction.md
+  - Introduction: ./hardening/introduction.md
   - Hardening:
-      - Introduction: ./hardening/introduction.md
       - Guide ANSSI: ./hardening/guide-anssi.md
       - Guide ANSSI OpenSSH: ./hardening/anssi-openssh.md
       - Guide Admin Debian: ./hardening/guide-admin-debian.md
       - Guide AppArmor: ./hardening/apparmor.md
+      - Guide cloisennement système: ./hardening/cloisennement.md
 markdown_extensions:
   - admonition
   - pymdownx.highlight

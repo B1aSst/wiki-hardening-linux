@@ -8,22 +8,26 @@ Pour ce faire, nous allons commencer par utiliser Debsecan qui va nous remonter 
 
 Après avoir élevé nos privilèges en tant que “root“ nous exécutons cette commande :
 
-```bash
+```sh
 sudo apt update && apt install debsecan && debsecan --suite $(lsb_release --codename --short) --only-fixed --format detail
 ```
 
 Cette commande ne nous donne rien car les paquets sont déjà à jours dès l’installation.
 
-On va maintenant utiliser l'outil Lynis qui va nous permettre d'auditer le système. Pour ce faire, nous utilisons cette commande :
+On va maintenant utiliser l'outil Lynis qui va nous permettre d'auditer le système. On installe le paquet :
+```sh
+sudo apt install lynis
+```
 
-```bash
+Pour ce faire, nous utilisons cette commande :
+
+```sh
 sudo lynis audit system
 ```
 
 Voici les résultats des scan sur la VM Bebian 13 tout juste installée :
 
-```
-
+```sh
 [ Lynis 3.1.4 ]
 
 ################################################################################
