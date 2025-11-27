@@ -35,9 +35,9 @@ apt install lynis
 lynis audit system
 ```
 
-On va maintenant installer le paquet sudo et placer notre utilisateur dans le groupe sudo, c'est simplement une meilleure pratique car il n'est pas recommandé d'exécuter des commandes en tant que root.
+On va maintenant installer le paquet sudo et placer notre utilisateur dans le groupe sudo, c'est une meilleure pratique car il n'est pas recommandé d'exécuter des commandes en tant qu'utilisateur root.
 
 ```bash
 apt install sudo
-usermod -aG sudo blast
+usermod -aG sudo <user>
 ```

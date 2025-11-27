@@ -164,7 +164,7 @@ Sur un réseau maîtrisé, le serveur SSH doit écouter uniquement sur une inter
 
 ```sh
 Port 22
-ListenAddress A.B.C.D
+ListenAddress X.X.X.X
 ```
 
 ### Forwarding
@@ -177,7 +177,7 @@ Si le serveur n'est pas spécifiquement configuré en tant que bastion d'adminis
 AllowTcpForwarding no
 ```
 
-De la même manière, si il n'y a pas un besoin spécifique, le forwarding X11 doit être désactivé:
+De la même manière, s'il n'y a pas un besoin spécifique, le forwarding X11 doit être désactivé:
 
 ```sh
 ForwardX11Trusted no

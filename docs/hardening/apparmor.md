@@ -12,7 +12,13 @@ Il est important de noter que les règles "deny" sont bloquées même en mode "c
 
 A partir de la version 10 "Buster" de Debian, AppArmor est activé par défaut.
 
-## Vérifier l'état
+## Installation des paquets
+
+```sh
+sudo apt install apparmor apparmor-utils
+```
+
+## Status actuel
 
 Afin de vérifier si AppArmor est activé, on peut utiliser la commande suivante qui doit retourner Y.
 
@@ -20,9 +26,39 @@ Afin de vérifier si AppArmor est activé, on peut utiliser la commande suivante
 cat /sys/module/apparmor/parameters/enabled
 ```
 
-Afin de lister les profils pour les applications et processus en détail:
+Afin de lister les profils pour les applications et processus en détail :
 ```sh
 sudo aa-status
+```
+
+On peut voir les éxécutables qui sont confinés :
+```sh
+ps auxZ | grep -v '^unconfined'
+```
+
+On peut également voir ceux qui ont des ports utilisés mais qui n'ont pas de profil AppArmor :
+```sh
+sudo aa-unconfined
+```
+
+## Ajouter des profils
+
+Il est possible d'ajouter des profils pour d'autres éxécutables. Le paquet `apparmor-profiles-extra` permet de télécharger des profils AppArmor spécifique à Debian et `apparmor-profiles` des profils expérimentaux.
+
+Pour voir les nouveaux profils :
+```sh
+/usr/share/apparmor/extra-profiles/
+```
+
+Installer un profil :
+```sh
+sudo cp /usr/share/apparmor/extra-profiles/usr.sbin.sshd /etc/apparmor.d/
+```
+
+Activer un profil en mode "complain" ou "enforce" :
+```sh
+sudo aa-complain /etc/apparmor.d/usr.sbin.sshd
+sudo aa-enforce /etc/apparmor.d/usr.sbin.sshd
 ```
 
 ## Sources
