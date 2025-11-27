@@ -1,5 +1,5 @@
 site_name: Wiki Hardening Linux
-site_url: https://b1asst.github.io/wiki-hardening-linux/
+site_url: https://b1asst.github.io/wiki-hardening-linux/introduction.md
 theme:
   name: material
   features:
