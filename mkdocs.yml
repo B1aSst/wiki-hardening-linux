@@ -1,5 +1,5 @@
 site_name: Wiki Hardening Linux
-site_url: https://b1asst.github.io/wiki-hardening-linux/introduction.md
+site_url: https://b1asst.github.io/wiki-hardening-linux/
 theme:
   name: material
   features:
@@ -11,6 +11,7 @@ theme:
     - navigation.tabs
 nav:
   - Introduction: ./hardening/introduction.md
+  - Installation: ./install.md
   - Hardening:
       - Guide ANSSI: ./hardening/guide-anssi.md
       - Guide ANSSI OpenSSH: ./hardening/anssi-openssh.md

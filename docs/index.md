@@ -2,7 +2,7 @@
 
 Ce Wiki présentera le durcissement effectué sur un système d'exploitation Debian 13 en suivant principalement les recommendations de l'[ANSSI](https://cyber.gouv.fr/). Il explorera la configuration que ce soit du système d'exploitation ou de service omniprésent comme OpenSSH. Le but est ici est d'améliorer le score de durcissement tout en conservant un fonctionnement normal de notre système.
 
-## Installation
+## Spécification
 
 Pour commencer, nous allons installer Debian 13 “Trixie” sur l’hyperviseur de VirtualBox. Pour notre machine virtuelle, nous avons utilisé les spécifications suivantes :
 
