@@ -1,7 +1,5 @@
 # Hardening
 
-## Introduction
-
 Nous allons d’abord vérifier l’état de sécurité de la machine après l’installation et sans mise à jour.
 
 Pour ce faire, nous allons commencer par utiliser Debsecan qui va nous remonter la liste des CVE sur les paquets actuellement installé sur le system.

@@ -1,13 +1,21 @@
 # Introduction
 
-Ce Wiki présentera le durcissement effectué sur un système d'exploitation Debian 13 en suivant principalement les recommendations de l'[ANSSI](https://cyber.gouv.fr/). Il explorera la configuration que ce soit du système d'exploitation ou de service omniprésent comme OpenSSH. Le but est ici est d'améliorer le score de durcissement tout en conservant un fonctionnement normal de notre système.
+Ce Wiki présentera le durcissement effectué sur un système d'exploitation Debian 13 en suivant principalement les recommendations de l'[ANSSI](https://cyber.gouv.fr/) ainsi que d'autres sources comme Debian. Il explorera la configuration que ce soit du système d'exploitation ou de service omniprésent sur les serveurs comme OpenSSH. Le but est ici est d'améliorer le score de durcissement tout en conservant un fonctionnement normal du système.
 
 ## Spécification
 
-Pour commencer, nous allons installer Debian 13 “Trixie” sur l’hyperviseur de VirtualBox. Pour notre machine virtuelle, nous avons utilisé les spécifications suivantes :
+Dans le cadre de ce durcissement, Uun machine virtuelle Debian 13 "Trixie" sera utilisée avec les spécifications suivantes :
 
 * 2 CPU
 * 4 Go de RAM
 * 25 Go de stockage
 
-Cela devrait être amplement suffisant du fait qu’il n’y aura pas d’interface graphique. Lors de l’installation, nous avons créé une partition LVM chiffré et avons ajouté le paquet pour le service OpenSSH. Après ça, on peut passer à la phase de durcissement.
+## Installation
+
+L'hyperviseur VirtualBox sera utilisé pour la machine virtuelle mais n'importe quel autre hyperviseur aurait pu être utilisé.
+
+On télécharge le dernier ISO sur le site officiel de Debian : [Debian.org](https://www.debian.org/download.fr.html)
+
+On suit le script d'installation et on choisis les options suivantes :
+- Partition LVM chiffrée
+- Installation paquet pour le service OpenSSH
