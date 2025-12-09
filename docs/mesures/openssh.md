@@ -1,13 +1,15 @@
-# Recommendation de configuration pour un usage sécurisé d'OpenSSH
+# OpenSSH
 
 Le protocole SSH est particulièrement utilisé afin d'administrer des serveurs à distance car il utilise des protocoles cryptographiques pour sécuriser la communication avec le serveur.
 
-Nous allons dans ce wiki présenter les recommandations pour le durcissement du service OpenSSH qui implémente le protocole SSH.
+Nous allons dans ce wiki présenter les recommandations pour le durcissement du service OpenSSH qui implémente le protocole SSH. Chaque modification sera expliquée est présentée dans quel contexte il est le plus important.
 
-Chaque modification sera expliquée est présentée dans quel contexte il est le plus important.
+Si le service n'est pas présent sur le système, il est possible d'installer le paquet `openssh-server` :
+```sh
+sudo apt install openssh-server
+```
 
 Afin d'appliquer les recommendations, on va principalement travailler dans le fichier de configuration du service "/etc/ssh/sshd_config". Afin que le service prenne en compte les changements, il est nécessaire de le redémarrer :
-
 ```sh
 sudo systemctl restart sshd.service
 ```
@@ -38,9 +40,9 @@ Afin de voir si ces services sont lancés:
 sudo ps aux | grep <service>
 ```
 
-Pour les supprimer du système:
+Pour les supprimer du système ainsi que les fichiers associés:
 ```sh
-sudo apt purge <service>
+sudo apt purge <paquet>
 ```
 ## Cryptographie
 
@@ -48,8 +50,7 @@ sudo apt purge <service>
 
 #### R6
 
-L'authentification SSH se repose sur la cryptographie asymétrique. Afin de s'assurer de la légitimité du serveur, on peut demander au client la validation de la clé hôte via le paramètre :
-
+L'authentification SSH se repose sur la cryptographie asymétrique. Afin de s'assurer de la légitimité du serveur, on peut demander au client la validation de la clé hôte via le paramètre dans le fichier ssh_config :
 ```sh
 StrictHostKeyChecking ask
 ```
@@ -80,7 +81,7 @@ Il est impératif de vérifier que la clé privée n'est lisible que par le serv
 
 Dans le cas contraire, les droits doivent être modifiés.
 
-Il est important de vérifier que le client a les bons droits utilisateur sur sa clé privée. On peut ajouter le paramètre suivant :
+Il est important de vérifier que le client a les bons droits utilisateurs sur sa clé privée. On peut ajouter le paramètre suivant :
 
 ```sh
 StrictModes yes
@@ -115,7 +116,7 @@ PubkeyAuthentication yes
 PasswordAuthentication no
 ```
 
-Cela permet d'éviter qu'un brute force fonctionne dans le cas où un mot de basse faible serait configuré pour un utilisateur.
+Cela permet d'éviter qu'un brute force fonctionne dans le cas où un mot de passe faible serait configuré pour un utilisateur.
 
 ### Imputabilité des accès
 
@@ -174,7 +175,7 @@ Côté client, il est également possible désactiver la transmission X11 dans l
 ForwardX11Trusted no
 ```
 
-Le forwarding si pas désactivé peut potentielle être utilisé par un attaquant pour pivoter sur le réseau, d'où l'intêrét de le désactiver.
+La transmission si pas désactivée peut potentielle être utilisé par un attaquant pour pivoter sur le réseau, d'où l'intêrét de la désactiver.
 
 ## Sources
 

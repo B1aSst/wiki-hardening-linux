@@ -1,30 +1,42 @@
-# Hardening
+# Test de sécurité
 
-Nous allons d’abord vérifier l’état de sécurité de la machine après l’installation et sans mise à jour.
+Afin de suivre l'état de durcissement du système ou du service ciblé, il est important d'utiliser des outils de test.
+Dans notre cas, nous allons nous baser sur deux outils :
 
-Pour ce faire, nous allons commencer par utiliser Debsecan qui va nous remonter la liste des CVE sur les paquets actuellement installé sur le system.
+- **Debsecan**
+- **Lynis**
 
-Après avoir élevé nos privilèges en tant que “root“ nous exécutons cette commande :
+## Debsecan
 
+Il est possible de lister les paquets installés avec des CVE répertoriés graçe à l'outil Debsecan.
+
+On commence par installer le paquet `debsecan` :
 ```sh
-sudo apt update && apt install debsecan && debsecan --suite $(lsb_release --codename --short) --only-fixed --format detail
+sudo apt install debsecan
 ```
 
-Cette commande ne nous donne rien car les paquets sont déjà à jours dès l’installation.
+On lance ensuite un scan :
+```sh
+sudo debsecan --suite $(lsb_release --codename --short) --only-fixed --format detail
+```
 
-On va maintenant utiliser l'outil Lynis qui va nous permettre d'auditer le système. On installe le paquet :
+La commande ne retourne rien car les paquets sont déjà à jours dès l’installation.
+
+## Lynis
+
+On va maintenant utiliser l'outil Lynis qui va nous permettre d'auditer le système. 
+
+On installe le paquet `Lynis`:
 ```sh
 sudo apt install lynis
 ```
 
-Pour ce faire, nous utilisons cette commande :
-
+On peut maintenant lancer un audit du système :
 ```sh
 sudo lynis audit system
 ```
 
-Voici les résultats des scan sur la VM Bebian 13 tout juste installée :
-
+Voici les résultats d'un scan sur un VM Debian 13 tout juste installée :
 ```sh
 [ Lynis 3.1.4 ]
 
@@ -806,3 +818,7 @@ Voici les résultats des scan sur la VM Bebian 13 tout juste installée :
   [TIP]: Enhance Lynis audits by adding your settings to custom.prf (see /etc/lynis/default.prf for all settings)
 
 ```
+
+## Sources
+
+- [Scan your Linux security with Lynis](https://opensource.com/article/20/5/linux-security-lynis)

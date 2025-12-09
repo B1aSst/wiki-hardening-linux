@@ -1,6 +1,6 @@
-# Recommandations de configuration d'un système GNU/LINUX - Guide ANSSI
+# Système GNU/LINUX
 
-Source : [Recommandations de sécurité relatives à un système GNU/Linux](https://cyber.gouv.fr/publications/recommandations-de-securite-relatives-un-systeme-gnulinux)
+*Recommandations de configuration d'un système GNU/LINUX - Guide ANSSI*
 
 ## Recommandations M
 
@@ -1204,3 +1204,7 @@ Le gestionnaire de paquets a visibilité sur les paquets de la liste `main` mais
 ### R76 : Sceller et vérifier l’intégrité des fichiers
 
 ### R77 : Protéger la base de données des scellés
+
+## Sources
+
+- [Recommandations de sécurité relatives à un système GNU/Linux](https://cyber.gouv.fr/publications/recommandations-de-securite-relatives-un-systeme-gnulinux)

@@ -4,7 +4,7 @@ Ce Wiki présentera le durcissement effectué sur un système d'exploitation Deb
 
 ## Spécification
 
-Dans le cadre de ce durcissement, Uun machine virtuelle Debian 13 "Trixie" sera utilisée avec les spécifications suivantes :
+Dans le cadre de ce durcissement, une machine virtuelle Debian 13 "Trixie" sera utilisée avec les spécifications suivantes :
 
 * 2 CPU
 * 4 Go de RAM
@@ -17,5 +17,6 @@ L'hyperviseur VirtualBox sera utilisé pour la machine virtuelle mais n'importe 
 On télécharge le dernier ISO sur le site officiel de Debian : [Debian.org](https://www.debian.org/download.fr.html)
 
 On suit le script d'installation et on choisis les options suivantes :
+
 - Partition LVM chiffrée
 - Installation paquet pour le service OpenSSH
