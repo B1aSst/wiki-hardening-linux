@@ -9,13 +9,35 @@ theme:
     - navigation.indexes
     - navigation.sections
     - navigation.tabs
+
+  palette:
+    # Light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/lightbulb-outline
+        name: Switch to dark mode
+
+    # Dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/lightbulb
+        name: Switch to light mode
 nav:
-  - Hardening:
-      - Introduction: ./hardening/introduction.md
-      - Guide ANSSI: ./hardening/guide-anssi.md
-      - Guide OpenSSH: ./hardening/openssh.md
-      - Guide Admin Debian: ./hardening/guide-admin-debian.md
-      - Guide AppArmor: ./hardening/apparmor.md
+  - "Introduction":
+      - "Introduction": index.md
+      - "Test de sécurité": test-securisation.md
+  - "Mesures de sécurisation":
+      - "Système GNU/LINUX": mesures/gnu-linux.md
+      - "OpenSSH": mesures/openssh.md
+      - "AppArmor": mesures/apparmor.md
+  - "Automatisation":
+      - "Ansible": automatisation/ansible.md
 markdown_extensions:
   - admonition
   - pymdownx.highlight
