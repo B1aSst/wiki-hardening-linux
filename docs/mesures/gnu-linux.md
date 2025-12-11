@@ -174,7 +174,7 @@ Seuls les composants strictement nécessaires au service rendu par le système d
 Pour les distributions sous systemd, la commande suivante permet de lister l’ensemble des services installés sur le système :
 
 ```bash
-sudo systemctl list -units --type service
+sudo systemctl list-units --type service
 ```
 
 ```
@@ -336,10 +336,12 @@ mentionnées dans la note technique « Recommandations de configuration matérie
 de postes clients et serveurs x86 ».
 
 ### R3 : Activer le démarrage sécurisé UEFI
+
 Il est recommandé d’activer la configuration du démarrage sécurisé UEFI associée à
 la distribution.
 
 ### R5 : Configurer un mot de passe pour le chargeur de démarrage
+
 Un chargeur de démarrage permettant de protéger son démarrage par mot de passe
 est à privilégier. Ce mot de passe doit empêcher un utilisateur quelconque de modi-
 fier ses options de configuration.
@@ -382,6 +384,7 @@ sudo update-grub
 ```
 
 ### R8 : Paramétrer les options de configuration de la mémoire
+
 Les options de configuration de la mémoire recommandées sont les suivantes.
 
 Les options de configuration de la mémoire détaillées dans cette liste sont à ajouter
@@ -455,7 +458,11 @@ sudo nano /etc/default/grub
 Ajouter ou modifier la ligne suivante :
 ```bash
 # On ajoute les options de configuration de la mémoire
-GRUB_CMDLINE_LINUX_DEFAULT="quiet l1tf=full,force npage_poison=on pti=on slab_nomerge=yes slub_debug=FZP spec_store_bypass_disable=seccomp spectre_v2=on mds=full,nosmt mce=0 page_alloc.shuffle=1 rng_core.default_quality=500"
+GRUB_CMDLINE_LINUX_DEFAULT="quiet l1tf=full,force page_poison=on pti=on slab_nomerge=yes slub_debug=FZP spec_store_bypass_disable=seccomp spectre_v2=on mds=full,nosmt mce=0 page_alloc.shuffle=1 rng_core.default_quality=500"
+```
+
+```bash
+sudo update-grub
 ```
 
 ### R9 : Paramétrer les options de configuration du noyau
@@ -496,6 +503,7 @@ sudo sysctl -p
 ```
 
 ### R11 : Activer et configurer le LSM Yama
+
 Il est recommandé de charger le module de sécurité Yama lors du démarrage, par
 exemple en passant la directive security=yama au noyau, et d’affecter à l’option de
 configuration du noyau kernel.yama.ptrace_scope une valeur au moins égale à 1.
@@ -524,6 +532,7 @@ sudo sysctl -p
 ```
 
 ### R12 : Paramétrer les options de configuration du réseau IPv4
+
 La liste ci-dessous présente les options de configuration du réseau IPv4 pour un hôte
 « serveur » typique qui n’effectue pas de routage et ayant une configuration IPv4
 minimaliste (adressage statique).
@@ -604,6 +613,7 @@ sudo sysctl -p
 ```
 
 ### R13 : Désactiver le plan IPv6
+
 Quand IPv6 n’est pas utilisé, il est recommandé de désactiver la pile IPv6.
 
 Editer le fichier `/etc/default/grub` :
@@ -662,6 +672,7 @@ UUID=xxxx-xxxx  /boot           ext4    defaults,nosuid,nodev,noexec,noauto 0   
 ```
 
 ### R32 : Expirer les sessions utilisateur locales
+
 Les sessions utilisateur locales doivent expirer après une période d’inactivité.
 
 Ajouter ceci dans `/etc/profile` ou un fichier sous `/etc/profile.d/` :
@@ -754,7 +765,7 @@ Les directives suivantes doivent être activées par défaut :
 Editer le fichier `/etc/sudoers` :
 
 ```bash
-sudo nano /etc/sudoers
+sudoedit /etc/sudoers
 ```
 
 Ajouter ou modifier les lignes suivantes :
@@ -767,6 +778,7 @@ Defaults ignore_dot ,env_reset
 Il est ensuite possible de surcharger la valeur par défaut si nécessaire lors de la définition d’un droit (1) ou pour tout un groupe (2).
 
 ```bash
+Defaults:myuser !noexec
 myuser ALL = EXEC: /usr/bin/mycommand # (1)
 Defaults :% admins !noexec # (2
 ```
@@ -853,15 +865,25 @@ authentification du serveur distant, mécanismes d’anti-rejeu…).
 
 `pam_wheel` permet de restreindre un accès aux utilisateurs membres d’un groupe particulier (wheel par défaut) ;
 
-`pam_mktemp` permet de fournir des répertoires temporaires privés par utilisateur sous /tmp ;
+`pam_mktemp` permet de fournir des répertoires temporaires privés par utilisateur sous /tmp ; (présent sur certaines distributions comme Red Hat/CentOS, mais pas sur Debian/Ubuntu)
 
 `pam_namespace` permet de créer un espace de noms privés par utilisateur.
+
+```bash
+sudo groupadd wheel
+sudo usermod -aG wheel gleguellec
+```
 
 Dans le fichier `/etc/pam.d/su` :
 
 ```bash
 # Limite l'accès à root via su aux membres du groupe 'wheel'
 auth	required	pam_wheel.so use_uid root_only
+```
+
+```bash
+# Installe le module pam_pwquality pour la gestion de la qualité des mots de passe
+sudo apt install libpam-pwquality
 ```
 
 Dans le fichier `/etc/pam.d/passwd` :
@@ -871,9 +893,9 @@ Dans le fichier `/etc/pam.d/passwd` :
 # les minuscules, les chiffres et les autres en interdisant la répétition
 # d'un caractère
 
-password required pam_pwquality.so minlen =12 minclass =3 \
-              dcredit =0 ucredit =0 lcredit =0 \
-              ocredit =0 maxrepeat =1
+password required pam_pwquality.so minlen=12 minclass=3 \
+              dcredit=0 ucredit=0 lcredit=0 \
+              ocredit=0 maxrepeat=1
 ```
 
 Dans les fichiers `/etc/pam.d/login` et `/etc/pam.d/sshd` :
@@ -883,8 +905,6 @@ auth required pam_faillock.so deny=3 unlock_time=300
 ```
 
 ```bash
-# On ajoute pam_mktemp pour fournir des répertoires temporaires privés par utilisateur
-session	required	pam_mktemp.so umask=0077
 # On ajoute pam_namespace pour créer un espace de noms privés par utilisateur
 session	required	pam_namespace.so
 ```
