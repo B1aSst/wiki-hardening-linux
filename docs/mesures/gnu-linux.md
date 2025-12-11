@@ -1289,7 +1289,7 @@ systemctl list-units --type=service --state=running
 
 ```bash
 sudo service cron status
-sudo nano sudo nano /usr/lib/systemd/system/cron.service
+sudo nano /usr/lib/systemd/system/cron.service
 ```
 
 ```
@@ -1350,7 +1350,82 @@ ProtectHome=yes
 
 ### R65 : Cloisonner les services
 
+Dans le cadre du principe de minimisation, il est recommandé de cloisonner les services avec les mécanismes de confinement, de filtrage et d’isolation disponibles dans le noyau Linux.
 
+Voici les configurations que nous pouvons ajouter à chaque services :
+
+* ssh.service
+
+```bash
+sudo mkdir -p /etc/systemd/system/ssh.service.d/
+sudo nano /etc/systemd/system/ssh.service.d/override.conf
+```
+
+```
+[Service]
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateDevices=yes
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+SystemCallFilter=@system-service
+ReadWritePaths=/var/run/sshd
+NoNewPrivileges=true
+```
+
+```bash
+sudo systemctl daemon-reload
+sudo service ssh restart
+```
+
+* cron.service
+
+```
+[Service]
+PrivateTmp=yes
+ProtectSystem=full
+ProtectHome=yes
+NoNewPrivileges=true
+SystemCallFilter=@system-service
+```
+
+* systemd-timesyncd.service
+
+```
+[Service]
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+ProtectClock=yes
+NoNewPrivileges=true
+```
+
+* dbus.service
+
+```
+[Service]
+PrivateTmp=yes
+ProtectSystem=full
+ProtectHome=yes
+NoNewPrivileges=true
+```
+
+* getty@.service
+
+```
+[Service]
+ProtectSystem=yes
+ProtectHome=yes
+PrivateTmp=yes
+NoNewPrivileges=true
+```
+
+Parce que la machine en Debian "minimal" n’exécute que des services système essentiels directement intégrés au noyau et indispensables au fonctionnement de Debian, ils ne peuvent pas être déplacés ou virtualisés, et seul le cloisonnement interne via systemd (namespaces, cgroups, seccomp) est applicable.
+
+On pourrait imaginer que les prochains services à ajouter au SI seront cloisonnés des autres par l'intermédiaire d'un hyperviseur ou des conteneurs.
 
 ### R71 : Mettre en place un système de journalisation
 
