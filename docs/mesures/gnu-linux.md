@@ -1429,7 +1429,66 @@ On pourrait imaginer que les prochains services à ajouter au SI seront cloisonn
 
 ### R71 : Mettre en place un système de journalisation
 
-### R72 : Mettre en place un système de journalisation
+Il est d’usage d’avoir un serveur syslog résidant qui ne gère que les évènements soumis localement par les services du système et qui envoie éventuellement ces évènements à un serveur centralisé.
+
+```bash
+sudo apt update
+sudo apt install rsyslog
+sudo nano /etc/systemd/journald.conf
+```
+
+```
+ForwardToSyslog=yes
+```
+
+```bash
+sudo service systemd-journald restart
+sudo chmod -R o-rwx /var/log
+sudo chown -R root:root /var/log
+sudo nano /etc/logrotate.d/rsyslog
+sudo service rsyslog restart
+```
+
+Ici, nous enregistrons les logs du système dans le dossier /var/log en local sur la machie. Dans l'idéal et comme expliqué dans le guide, on utiliserait un serveur dédié à stocker les logs avec syslog-ng sur une infrastructure avec plusieurs serveurs. Chacun des journaux d'événements seraient envoyés au serveur via le protocol syslog en 514 ou 10514 via le service rsyslog en ajoutant une configuration dédiée.
+
+### R72 : Mettre en place des journaux d'activité de service dédiés
+
+Chaque service doit posséder un journal d’événements dédié sur le système. Ce journal ne doit être accessible que par le serveur syslog, et ne doit pas être lisible, modifiable ou supprimable par le service directement.
+
+Dans notre cas l'objectif est donc d'obtenir les journaux d'événements suivants :
+- /var/log/sshd.log
+- /var/log/cron.log
+- /var/log/timesyncd.log
+- ...
+
+```bash
+sudo touch /var/log/sshd.log
+sudo touch /var/log/cron.log
+sudo touch /var/log/timesyncd.log
+sudo chown root:root /var/log/*.log
+sudo chmod 640 /var/log/*.log
+sudo nano /etc/rsyslog.d/services.conf
+```
+
+```
+# SSH
+if ($programname == 'sshd') then /var/log/sshd.log
+& stop
+
+# cron
+if ($programname == 'CRON') then /var/log/cron.log
+& stop
+
+# systemd-timesyncd
+if ($programname == 'systemd-timesyncd') then /var/log/timesyncd.log
+& stop
+```
+
+```bash
+sudo systemctl restart rsyslog
+```
+
+Chaque futur service que l'on ajoute à la VM doit être journalisé par l'intermédiaire de rsyslog.
 
 ### R73 : Journaliser l’activité système avec auditd
 
