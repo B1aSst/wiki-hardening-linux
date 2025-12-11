@@ -87,7 +87,7 @@ Il est important de vérifier que le client a les bons droits utilisateurs sur s
 StrictModes yes
 ```
   
-## Authentification
+## Authentification et contrôle d'accés utilisateur
 
 ### Authentification d'un utilisateur
 
@@ -147,6 +147,46 @@ Il est important de bloquer la modification de l'environnement utilisateur par l
 PermitUserEnvironment no
 ```
 
+### Journalisation
+
+Si une supervision avancée du service est nécessaire, il convient d'ajuster le niveau de journalisation. Il existe plusieurs niveau de verbosité :
+
+- QUIET – Ne journalise quasiment rien.
+- FATAL – Uniquement les erreurs critiques.
+- ERROR – Les journaux qui pourrait impacter des fonctionnalités.
+- INFO – Journalise les événemments clés (par défaut).
+- VERBOSE – Plus détaillé que le mode INFO, utile pour la supervision.
+- DEBUG / DEBUG1-3 – Journalisation extensive, utile pour le dépannage mais non recommandé en production due à de potentielles lenteurs.
+
+Il est intéressant de passer en mode "VERBOSE" à des fins de supervision :
+```sh
+LogLevel VERBOSE
+```
+
+Pour les journaux SYSLOG, il existe 4 modes :
+
+- AUTH – Journaux liés à l'authentification (par défaut).
+- AUTHPRIV – Similaire à AUTH, les journaux sont restreint aux utilisateurs priviliégiés.
+- DAEMON – Les journaux sont catégorisés sous le démon système. 
+- USER – Les journaux sont enregistrés dans les messages au niveau utilisateur.
+
+Une fois cette configuration activée, il convient de configurer l'outil de journalisation du système afin que les journaux soit récupérés par exemple, soit en local et/ou envoyé sur un serveur distant. À partir de Debian 13, l'outil `RSYSLOG` n'est plus installé par défaut. Il convient d'installer le paquet `RSYSLOG` ou `SYSLOG-NG`.
+
+Il est recommandé de restreindre les journaux aux utilisateurs privilégiés :
+```sh
+SyslogFacility AUTHPRIV
+```
+
+### Protection contre le brute force
+
+Si le service doit être exposé dans un réseau non maîtrisé (ce que n'est pas recommandé), il peut être pertinent d'utiliser un service de "mise en prison" des adresses IP faisant du "brute force" comme `fail2ban` et/ou de blocage d'adresse malveillante comme `crowdsec`.
+
+L'outil `fail2ban` est configuré par défaut, il convient simplement d'installer le paquet et de l'activer au redémmarage :
+```sh
+sudo apt install fail2ban
+sudo systemctl enable --now fail2ban
+```
+
 ## Protocole et accès réseau
 
 #### R25
@@ -177,6 +217,9 @@ ForwardX11Trusted no
 
 La transmission si pas désactivée peut potentielle être utilisé par un attaquant pour pivoter sur le réseau, d'où l'intêrét de la désactiver.
 
+
+
 ## Sources
 
 - [ANSSI - Usage sécurisé d’(Open)SSH](https://cyber.gouv.fr/publications/usage-securise-dopenssh)
+- [SSHD Logs 101](https://last9.io/blog/sshd-logs-101/)

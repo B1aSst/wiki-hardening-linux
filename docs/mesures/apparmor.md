@@ -1,4 +1,4 @@
-# Recommendation de configuration pour AppArmor
+# AppArmor
 
 ## Fonctionnement
 
