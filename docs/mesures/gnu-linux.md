@@ -1685,7 +1685,7 @@ Dans notre contexte, avec seulement SSH et systemd-timesyncd comme réels servic
 
 ### Scan
 
-Après application des recommandations de niveau R du guide, on éffectue un nouveau scan Lynis :
+Après application des recommandations de niveau R du guide, on effectue un nouveau scan Lynis :
 
 ```bash
 sudo lynis audit system
