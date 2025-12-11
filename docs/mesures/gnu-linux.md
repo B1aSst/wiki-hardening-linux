@@ -967,7 +967,7 @@ sudo ss -tuln
 
 ### Scan
 
-Après application des recommandations de niveau M du guide, on éffectue un nouveau scan Lynis :
+Après application des recommandations de niveau I du guide, on éffectue un nouveau scan Lynis :
 
 ```bash
 sudo lynis audit system
@@ -975,9 +975,97 @@ sudo lynis audit system
 
 Voici les différences constatées :
 
+* Chiffrement du disque :
 
+```
+- File System Checks:
+    - DM-Crypt, Cryptsetup & Cryptmount:
+      - Checking / on /dev/mapper/sda5_crypt                  [ ENCRYPTED (Type: LUKS2) ]
+      - Checking /boot on /dev/sda1                           [ NOT ENCRYPTED ]
+```
 
+* Mot de passe sur le chargeur de démarrage :
 
+```
+- Checking presence GRUB2                                   [ FOUND ]
+    - Checking for password protection                        [ OK ]
+```
+
+* Davantage de services au démarrage (normal car certains services de sécurité ont été activés, comme auditd) :
+
+```
+- Check enabled services at boot (systemctl)                [ DONE ]
+        Result: found 19 enabled services
+```
+
+* Durcissement des mots de passe avec PAM :
+
+```
+  - PAM password strength tools                               [ OK ]
+```
+
+* Déconnexion automatique des sessions inactives :
+
+```
+  - Session timeout settings/tools                          [ FOUND ]
+```
+
+* Vérification des systèmes de fichiers (LVM, nodev, noexec, nosuid) :
+
+```
+- Checking LVM volume groups                                [ FOUND ]
+  - Checking LVM volumes                                    [ FOUND ]
+
+- Mount options of /boot                                    [ DEFAULT ]
+- Total without nodev:5 noexec:8 nosuid:3 ro or noexec (W^X): 8 of total 26
+```
+
+* IPv6 bien désactivé :
+
+```
+[+] Networking
+------------------------------------
+  - Checking IPv6 configuration                               [ DISABLED ]
+```
+
+* Plus de mention d'IPv6 dans sysctl :
+
+```
+[+] Kernel Hardening
+------------------------------------
+```
+
+* Aucun fichier supprimé en cours d'utilisation :
+
+```
+Checking deleted files in use                             [ DONE ]
+```
+
+* Chiffrement :
+
+```
+[+] Cryptography
+------------------------------------
+  - Found 1 LUKS encrypted block devices.                     [ OK ]
+  - Found 0 encrypted and 1 unencrypted swap devices in use.  [ OK ]
+```
+
+* Certains services inutiles ont bien été désactivés :
+
+```
+[+] Software: file integrity
+------------------------------------
+  - dm-integrity (status)                                     [ DISABLED ]
+  - dm-verity (status)                                        [ DISABLED ]
+```
+
+* Le score global est passé de 62 (sans mesures appliquées) à 64 (avec les mesures de niveau M et I appliquées).
+```
+  Lynis security scan details:
+
+  Hardening index : 64 [############        ]
+  Tests performed : 258
+```
 
 ## Recommandations R
 
