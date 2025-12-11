@@ -657,6 +657,17 @@ UUID=xxxx-xxxx  /boot           ext4    defaults,nosuid,nodev,noexec,noauto 0   
 ```
 
 ### R32 : Expirer les sessions utilisateur locales
+Les sessions utilisateur locales doivent expirer après une période d’inactivité.
+
+Ajouter ceci dans `/etc/profile` ou un fichier sous `/etc/profile.d/` :
+
+```bash
+# Expire les sessions après 5 minutes d'inactivité
+export TMOUT=300
+```
+
+Le serveur étant sans interface graphique, aucune configuration additionnelle n'est nécessaire pour les sessions graphiques.
+
 ### R33 : Assurer l'imputabilité des actions d'administration
 
 Les actions d’administration nécessitant des privilèges doivent être tracées afin de
@@ -698,10 +709,29 @@ Il est important de réaliser que le volume de log généré par cette méthode 
 être très important en fonction des tâches effectuées sur le système. Il est donc
 conseillé d’utiliser cette méthode en combinaison d’un export de logs régulier
 comme conseillé dans le guide Recommandations de sécurité pour l’architecture d’un
-système de journalisation [7].
+système de journalisation.
 
 ### R34 : Désactiver les comptes de service
+
+La connexion à des comptes de service doivent être désactivée pour réduire la surface d’attaque.
+
+```bash
+sudo usermod -s /bin/false <service_account>
+
+# Pour vérifier :
+getent passwd <service_account>
+# www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin
+```
+
 ### R35 : Utiliser des comptes de service uniques et exclusifs
+
+Chaque service doit utiliser un compte de service unique et exclusif.
+
+```bash
+# Crée un compte de service dédié
+sudo useradd -r -s /bin/false <service_account>
+```
+
 ### R39 : Modifier les directives de configuration sudo
 
 Les directives suivantes doivent être activées par défaut :
@@ -760,6 +790,22 @@ Les fichiers et les répertoires sensibles ne doivent être lisibles que par les
 
 Tous les fichiers sensibles, générés ou installés lors l’installation du système, et ceux qui concourent aux mécanismes d’authentification (certificats d’autorité racine, clés publiques, certificats…) doivent être mis en place dès l’installation du système.
 
+1. les fichiers ou répertoires sensibles système doivent avoir comme propriétaire
+root afin d’éviter tout changement de droit par un utilisateur non privilégié ;
+2. les fichiers ou répertoires sensibles accessibles à un utilisateur différent de root
+(par exemple, la base des mots de passe d’un serveur Web) doivent avoir comme
+propriétaire cet utilisateur (par exemple, l’utilisateur associé au serveur Web) qui
+doit être membre d’un groupe dédié (par exemple, le groupe www-group) et qui
+aura un droit d’accès en lecture seule à ce fichier ou répertoire ;
+3. le reste des utilisateurs ne doit posséder aucun droit sur les fichiers ou répertoires
+sensibles.
+
+```bash
+# Exemple de configuration de droits pour un fichier sensible
+chown root:root /etc/sensitive_file
+chmod 640 /etc/sensitive_file
+```
+
 ### R55 : Séparer les répertoires temporaires des utilisateurs
 
 Chaque utilisateur ou application doit posséder son propre répertoire temporaire et
@@ -776,6 +822,11 @@ au strict nécessaire.
 # Liste l'ensemble des fichiers exécutables pour lesquels un ou plusieurs Linux capabilities ont été activées
 find / -type f -perm /111 -exec getcap {} \; 2>/dev/null
 ```
+
+Les exécutables listés doivent être revus afin de s’assurer que les Linux capabilities activées sont nécessaires à leur bon fonctionnement. En effet, le noyau Linux offre 41 capabilities à ce jour. Au minimum 19 d’entre elles per-
+mettent d’élever trivialement ses droits à celui de l’utilisateur root (UID=0) (full
+root). La plupart des autres peuvent également fortement aider à obtenir un ac-
+cès root sur le système.
 
 ### R67 : Sécuriser les authentifications distante par PAM
 
@@ -832,14 +883,72 @@ session	required	pam_namespace.so
 ### R69 : Sécuriser les accès aux bases utilisateur distantes
 Lorsque les bases utilisateur sont stockées sur un serveur réseau distant, NSS doit être configuré pour établir une liaison sécurisée permettant au minimum d’authentifier le serveur et de protéger le canal de communication.
 
+Le compte utilisé pour accéder à cette base de données doit être distinct des comptes utilisateur du système et il ne doit disposer que des droits strictement nécessaires pour interroger cette base de données.
+
 ### R70 : Séparer les comptes système et d'administrateur de l'annuaire
 Il est recommandé de ne pas avoir de recouvrement de compte entre ceux utilisés par le système d’exploitation et ceux utilisés pour administrer l’annuaire.
 L’usage de comptes administrateur d’annuaire pour effectuer des requêtes d’énumération de comptes par NSS doit être prohibé.
 
 ### R74 : Durcir le service de messagerie locale
+
+Quand un service de messagerie est il doit être configuré pour n’accepter que :
+- les messages à destination d’un compte utilisateur local à la machine ;
+- les connexions sur l’interface réseau de la boucle locale, les connexions distantes
+au service de messagerie doivent être rejetées.
+
+Par défaut lors de l'installation d'un Debian minimal, aucun service de messagerie n'est installé ni en écoute.
+
+Les services utilisant la messagerie sont souvent configurés par défaut pour envoyer des messages à destination du compte de l’administrateur système (ou root). Conformément à la recommandation R33, ce compte doit être désactivé. Par conséquent, et pour ne perdre aucun message adressé à l’administrateur système, l’utilisation d’ « alias » est recommandée.
+
+Pour configurer un alias, ajouter dans le fichier `/etc/aliases` :
+
+```bash
+root: admin-gmorice
+```
+
 ### R75 : Configurer un alias de messagerie des comptes de service
+Pour chaque service exploité sur le système, ainsi que pour le compte d’administra-
+teur (ou root), un alias vers un compte utilisateur administrateur doit être configuré
+afin que celui-ci reçoive les notifications et les rapports adressés par messagerie élec-
+tronique.
+
+```bash
+sudo nano /etc/aliases
+```
+Ajouter les lignes suivantes :
+
+```bash
+# Exemple d'alias pour les comptes de service
+root: admin-gmorice
+www-data: admin-gmorice
+```
+
 ### R79 : Durcir et surveiller les services exposés
+
+Les services exposés à des flux non maîtrisés doivent être durcis et particulièrement
+surveillés. Cette surveillance consiste à caractériser le comportement du service, et à reporter tout écart par rapport à son fonctionnement nominal déduit des spécifications initiales attendues. 
+
+Les services réseau sont souvent configurés par défaut en écoute sur l’ensemble des interfaces réseau, augmentant inutilement leur surface d’attaque.
+
+Pour lister les services en écoute sur le système :
+
+```bash
+sudo ss -tuln
+```
+
 ### Scan
+
+Après application des recommandations de niveau M du guide, on éffectue un nouveau scan Lynis :
+
+```bash
+sudo lynis audit system
+```
+
+Voici les différences constatées :
+
+
+
+
 
 ## Recommandations R
 
