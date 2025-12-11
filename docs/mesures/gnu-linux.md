@@ -703,6 +703,10 @@ usermod -s /bin/false <compte >
 Il est possible de journaliser la création de processus sur le système avec les règles
 auditd suivantes :
 
+```bash
+sudo apt install auditd
+```
+
 Dans le fichier `/etc/audit/rules.d/audit.rules` :
 
 ```bash
