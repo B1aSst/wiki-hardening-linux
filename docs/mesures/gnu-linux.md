@@ -1577,7 +1577,64 @@ Dans notre contexte, avec seulement SSH et systemd-timesyncd comme réels servic
 
 ### Scan
 
+Après application des recommandations de niveau R du guide, on éffectue un nouveau scan Lynis :
 
+```bash
+sudo lynis audit system
+```
+
+Voici les différences constatées :
+
+* Le nombre de services en cours d'exécution ont augmenté :
+
+```
+        Result: found 12 running services
+  - Check enabled services at boot (systemctl)                [ DONE ]
+        Result: found 18 enabled services
+  - Check startup files 
+```
+
+* Le nombre de modules du kernel chargés a augmenté :
+
+```
+      Found 98 active modules
+```
+
+De même que pour l'augmentation des services en cours d'exécution, l’augmentation du nombre de modules chargés est due à l’activation de services et fonctionnalités supplémentaires (auditd, sandboxing systemd, journalisation dédiée, etc.) qui nécessitent des modules noyau additionnels pour fonctionner correctement.
+
+* Le umask par défaut est bien définit :
+
+```
+  - Determining default umask
+    - umask (/etc/profile and /etc/profile.d)                 [ OK ]
+[...]
+    - Checking default umask in /etc/profile                  [ OK ]
+```
+
+* Le service rsyslog est bien présent et l'audit système configuré :
+
+```
+    - Checking RSyslog status                                 [ FOUND ]
+```
+
+* Le service auditd est bien présent et les règles configurées :
+
+```
+  - Checking auditd                                           [ ENABLED ]
+    - Checking audit rules                                    [ OK ]
+    - Checking audit configuration file                       [ OK ]
+    - Checking auditd log file                                [ FOUND ]
+```
+
+* Le score d'hardening déterminé par lynis a augmenté à 64 :
+
+```
+  Lynis security scan details:
+
+  Hardening index : 64 [############        ]
+  Tests performed : 256
+  Plugins enabled : 1
+```
 
 ## Recommandations E
 
