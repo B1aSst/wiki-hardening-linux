@@ -2,6 +2,7 @@ site_name: Wiki Hardening Linux
 site_url: https://b1asst.github.io/wiki-hardening-linux/
 theme:
   name: material
+  language: fr
   features:
     - content.code.copy
     - toc.follow
@@ -17,7 +18,7 @@ theme:
       primary: indigo
       accent: indigo
       toggle:
-        icon: material/lightbulb-outline
+        icon: material/weather-night
         name: Switch to dark mode
 
     # Dark mode
@@ -26,7 +27,7 @@ theme:
       primary: indigo
       accent: indigo
       toggle:
-        icon: material/lightbulb
+        icon: material/weather-sunny
         name: Switch to light mode
 nav:
   - "Introduction":
@@ -47,3 +48,8 @@ markdown_extensions:
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - toc:
       permalink: true
+
+extra:
+  analytics:
+    provider: google
+    property: GTM-WT59M3WS
