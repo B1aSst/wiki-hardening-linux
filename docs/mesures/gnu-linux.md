@@ -1567,7 +1567,17 @@ Le système Debian 13 utilise auditd comme mécanisme principal de journalisatio
 
 ### R78 : Cloisonner les services réseau
 
+Les services réseau doivent autant que possible être hébergés sur des environnements distincts. Cela évite d’avoir d’autres services potentiellement affectés si l’un d’eux se retrouve compromis sous le même environnement.
+
+Le cloisonnement des environnements peut être réalisé de différentes façons (compte utilisateur dédié, conteneur spécifique, machine virtuelle ou physique...), chaque approche ayant des avantages et des inconvénients qu’il est nécessaire d’étudier : un compte utilisateur dédié permet toujours des accès aux ressources sur lesquels des droits incorrects sont positionnés (un audit assez fin des droits d’accès doit donc être réalisé), alors que les conteneurs et les machines virtuelles offrent un cloisonnement plus efficace, mais peuvent induire des efforts d’intégration supplémentaires.
+
+Ces services doivent donc être durcis et surveillés, et ce malgré l’apparente opération d’authentification effectuée par le serveur. Le durcissement relève de l’ensemble des mesures techniques qui visent à retarder voire empêcher la compromission du service. Cette démarche s’applique dès la phase de conception (étude de séparation de privilèges, spécifications non ambiguës...) jusqu’à la réalisation (validation des entrées/sorties, configuration sécurisée...) et la maintenance.
+
+Dans notre contexte, avec seulement SSH et systemd-timesyncd comme réels services réseau, il n’est pas pertinent de créer des conteneurs ou VM dédiés, et le cloisonnement se limite donc à un utilisateur dédié et au sandboxing systemd comme appliqué dans les précédentes recommandations.
+
 ### Scan
+
+
 
 ## Recommandations E
 
