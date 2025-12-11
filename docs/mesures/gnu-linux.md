@@ -1492,6 +1492,79 @@ Chaque futur service que l'on ajoute à la VM doit être journalisé par l'inter
 
 ### R73 : Journaliser l’activité système avec auditd
 
+La journalisation de l’activité du système doit être faite au travers du service auditd.
+
+```bash
+sudo apt update
+sudo apt install auditd audispd-plugins
+sudo nano /etc/audit/rules.d/hardening.rules
+```
+
+```
+##############################
+# Règles auditd - Conformité R73
+# Debian 13 minimal
+##############################
+
+# ------------ MODULES Noyau ------------
+# Exécution de insmod, rmmod et modprobe
+-w /sbin/insmod -p x -k kernel-mod
+-w /sbin/modprobe -p x -k kernel-mod
+-w /sbin/rmmod -p x -k kernel-mod
+
+# insmod, rmmod, modprobe → liens vers kmod
+-w /bin/kmod -p x -k kernel-mod
+
+# Chargement / suppression de modules (appels système)
+-a always,exit -F arch=b64 -S init_module -S delete_module -S finit_module -k kernel-mod
+
+# ------------ Fichiers système critiques ------------
+# Modifications dans /etc
+-w /etc/ -p wa -k etc-changes
+
+# ------------ Appels système sensibles ------------
+# Mount / Umount
+-a always,exit -S mount -S umount2 -k mount
+
+# Appels suspects x86 (toujours valables sur amd64)
+-a always,exit -S ioperm -S modify_ldt -k suspicious
+
+# Appels rares
+-a always,exit -S get_kernel_syms -S ptrace -k rare-calls
+-a always,exit -S prctl -k rare-calls
+
+# ------------ Fichiers et répertoires (création / suppression) ------------
+# ⚠️ Peut impacter les performances : OK pour Debian minimal
+-a always,exit -F arch=b64 -S unlink -S rmdir -S rename -k fs-delete
+-a always,exit -F arch=b64 -S creat -S open -S openat -F exit=-EACCES -k fs-perm
+-a always,exit -F arch=b64 -S truncate -S ftruncate -F exit=-EACCES -k fs-perm
+
+# ------------ Surveillance des services installés ------------
+# SSH
+-w /etc/ssh/ -p wa -k ssh-config
+-w /usr/sbin/sshd -p x -k ssh-exec
+
+# Cron
+-w /etc/cron.d/ -p wa -k cron-edit
+-w /etc/crontab -p wa -k cron-edit
+
+# Timesyncd
+-w /etc/systemd/timesyncd.conf -p wa -k time-config
+
+# ------------ Verrouillage auditd ------------
+# 2 = configuration non modifiable jusqu'au reboot
+-e 2
+```
+
+```bash
+sudo augenrules --load
+sudo service auditd restart
+sudo systemctl status auditd
+sudo auditctl -l
+```
+
+Le système Debian 13 utilise auditd comme mécanisme principal de journalisation avancée conformément à la mesure R73. Des règles spécifiques surveillent les appels système critiques, les modifications de fichiers sensibles, les actions sur les modules noyau, les opérations de montage et les accès non autorisés. Les règles sont verrouillées (-e 2), garantissant que la configuration ne peut pas être modifiée hors redémarrage. Auditd complète la journalisation classique par syslog et journald, offrant une traçabilité approfondie adaptée à un système minimal sécurisé.
+
 ### R78 : Cloisonner les services réseau
 
 ### Scan
