@@ -811,8 +811,8 @@ sensibles.
 
 ```bash
 # Exemple de configuration de droits pour un fichier sensible
-chown root:root /etc/sensitive_file
-chmod 640 /etc/sensitive_file
+sudo chown root:root /etc/sensitive_file
+sudo chmod 640 /etc/sensitive_file
 ```
 
 ### R55 : Séparer les répertoires temporaires des utilisateurs
