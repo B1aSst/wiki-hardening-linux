@@ -628,6 +628,11 @@ net.ipv6.conf.default.disable_ipv6=1
 net.ipv6.conf.all.disable_ipv6=1
 ```
 
+Pour appliquer les modifications :
+```bash
+sudo sysctl -p
+```
+
 ### R28 : Partitionnement type
 
 | Point de montage | Options | Description |
