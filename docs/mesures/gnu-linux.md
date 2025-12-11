@@ -1145,9 +1145,94 @@ Le gestionnaire de paquets a visibilité sur les paquets de la liste `main` mais
 
 ### R64 : Configurer les privilèges des services
 
+Tous les services et exécutables disponibles sur le système doivent faire l’objet d’une analyse afin de connaître les privilèges qui leur sont associés, et doivent ensuite être mis en œuvre et configurés en vue d’en utiliser le strict nécessaire.
 
+Pour lister les services en cours de fonctionnement sur notre machine :
+
+```
+systemctl list-units --type=service --state=running
+```
+
+```
+  UNIT                      LOAD   ACTIVE SUB     DESCRIPTION                                   
+  cron.service              loaded active running Regular background program processing daemon
+  dbus.service              loaded active running D-Bus System Message Bus
+  getty@tty1.service        loaded active running Getty on tty1
+  getty@tty6.service        loaded active running Getty on tty6
+  ssh.service               loaded active running OpenBSD Secure Shell server
+  systemd-journald.service  loaded active running Journal Service
+  systemd-logind.service    loaded active running User Login Management
+  systemd-timesyncd.service loaded active running Network Time Synchronization
+  systemd-udevd.service     loaded active running Rule-based Manager for Device Events and Files
+  user@1000.service         loaded active running User Manager for UID 1000
+```
+
+* cron.service
+
+```bash
+sudo service cron status
+sudo nano sudo nano /usr/lib/systemd/system/cron.service
+```
+
+```
+# Ajouter à [Service] :
+ProtectSystem=full
+ProtectHome=yes
+PrivateTmp=yes
+```
+
+```bash
+sudo systemctl daemon-reload
+sudo service cron restart
+```
+
+* dbus.service
+
+```
+PrivateTmp=yes
+ProtectSystem=full
+```
+
+* getty@.service
+
+```
+ProtectSystem=yes
+ProtectHome=yes
+PrivateTmp=yes
+```
+
+* ssh.service
+
+```
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ReadWritePaths=/var/run/sshd
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+```
+
+* systemd-logind.service
+
+```
+ProtectSystem=yes
+```
+
+* systemd-timesyncd.service
+
+```
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+ProtectSystem=strict
+ProtectClock=yes
+PrivateTmp=yes
+ProtectHome=yes
+```
 
 ### R65 : Cloisonner les services
+
+
 
 ### R71 : Mettre en place un système de journalisation
 
