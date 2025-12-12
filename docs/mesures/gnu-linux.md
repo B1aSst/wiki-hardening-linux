@@ -725,11 +725,7 @@ Dans le fichier `/etc/audit/rules.d/audit.rules` :
 -a exit ,always -F arch=b32 -S execve ,execveat
 ```
 
-Il est important de réaliser que le volume de log généré par cette méthode peut
-être très important en fonction des tâches effectuées sur le système. Il est donc
-conseillé d’utiliser cette méthode en combinaison d’un export de logs régulier
-comme conseillé dans le guide Recommandations de sécurité pour l’architecture d’un
-système de journalisation.
+Il est important de réaliser que le volume de log généré par cette méthode peut être très important en fonction des tâches effectuées sur le système. Il est donc conseillé d’utiliser cette méthode en combinaison d’un export de logs régulier comme conseillé dans le guide Recommandations de sécurité pour l’architecture d’un système de journalisation.
 
 ### R34 : Désactiver les comptes de service
 
@@ -904,6 +900,8 @@ Dans les fichiers `/etc/pam.d/login` et `/etc/pam.d/sshd` :
 auth required pam_faillock.so deny=3 unlock_time=300
 ```
 
+Dans le fichier `/etc/pam.d/common-session` :
+
 ```bash
 # On ajoute pam_namespace pour créer un espace de noms privés par utilisateur
 session	required	pam_namespace.so
@@ -967,7 +965,7 @@ sudo ss -tuln
 
 ### Scan
 
-Après application des recommandations de niveau I du guide, on éffectue un nouveau scan Lynis :
+Après application des recommandations de niveau M du guide, on éffectue un nouveau scan Lynis :
 
 ```bash
 sudo lynis audit system
@@ -975,97 +973,9 @@ sudo lynis audit system
 
 Voici les différences constatées :
 
-* Chiffrement du disque :
 
-```
-- File System Checks:
-    - DM-Crypt, Cryptsetup & Cryptmount:
-      - Checking / on /dev/mapper/sda5_crypt                  [ ENCRYPTED (Type: LUKS2) ]
-      - Checking /boot on /dev/sda1                           [ NOT ENCRYPTED ]
-```
 
-* Mot de passe sur le chargeur de démarrage :
 
-```
-- Checking presence GRUB2                                   [ FOUND ]
-    - Checking for password protection                        [ OK ]
-```
-
-* Davantage de services au démarrage (normal car certains services de sécurité ont été activés, comme auditd) :
-
-```
-- Check enabled services at boot (systemctl)                [ DONE ]
-        Result: found 19 enabled services
-```
-
-* Durcissement des mots de passe avec PAM :
-
-```
-  - PAM password strength tools                               [ OK ]
-```
-
-* Déconnexion automatique des sessions inactives :
-
-```
-  - Session timeout settings/tools                          [ FOUND ]
-```
-
-* Vérification des systèmes de fichiers (LVM, nodev, noexec, nosuid) :
-
-```
-- Checking LVM volume groups                                [ FOUND ]
-  - Checking LVM volumes                                    [ FOUND ]
-
-- Mount options of /boot                                    [ DEFAULT ]
-- Total without nodev:5 noexec:8 nosuid:3 ro or noexec (W^X): 8 of total 26
-```
-
-* IPv6 bien désactivé :
-
-```
-[+] Networking
-------------------------------------
-  - Checking IPv6 configuration                               [ DISABLED ]
-```
-
-* Plus de mention d'IPv6 dans sysctl :
-
-```
-[+] Kernel Hardening
-------------------------------------
-```
-
-* Aucun fichier supprimé en cours d'utilisation :
-
-```
-Checking deleted files in use                             [ DONE ]
-```
-
-* Chiffrement :
-
-```
-[+] Cryptography
-------------------------------------
-  - Found 1 LUKS encrypted block devices.                     [ OK ]
-  - Found 0 encrypted and 1 unencrypted swap devices in use.  [ OK ]
-```
-
-* Certains services inutiles ont bien été désactivés :
-
-```
-[+] Software: file integrity
-------------------------------------
-  - dm-integrity (status)                                     [ DISABLED ]
-  - dm-verity (status)                                        [ DISABLED ]
-```
-
-* Le score global est passé de 62 (sans mesures appliquées) à 64 (avec les mesures de niveau M et I appliquées).
-```
-  Lynis security scan details:
-
-  Hardening index : 64 [############        ]
-  Tests performed : 258
-```
 
 ## Recommandations R
 
@@ -1685,7 +1595,7 @@ Dans notre contexte, avec seulement SSH et systemd-timesyncd comme réels servic
 
 ### Scan
 
-Après application des recommandations de niveau R du guide, on effectue un nouveau scan Lynis :
+Après application des recommandations de niveau R du guide, on éffectue un nouveau scan Lynis :
 
 ```bash
 sudo lynis audit system
@@ -1744,51 +1654,780 @@ De même que pour l'augmentation des services en cours d'exécution, l’augment
   Plugins enabled : 1
 ```
 
-## Recommandations E
+## Scan final
 
-### R4 : Remplacer les clés préchargées
+Après application des recommandations des trois niveaux M,I,R du guide, on éffectue un nouveau scan Lynis :
 
-### R6 : Protéger les paramètres de ligne de commande du noyau et l’initramfs
+```bash
+sudo lynis audit system
+```
 
-### R15 : Paramétrer les options de compilation pour la gestion de la mémoire
+Voici le résultat du scan :
 
-### R16 : Paramétrer les options de compilation pour les structures de données du noyau
+```
 
-### R17 : Paramétrer les options de compilation pour l’allocateur mémoire
+[ Lynis 3.1.4 ]
 
-### R18 : Paramétrer les options de compilation pour la gestion des modules noyau
+################################################################################
+  Lynis comes with ABSOLUTELY NO WARRANTY. This is free software, and you are
+  welcome to redistribute it under the terms of the GNU General Public License.
+  See the LICENSE file for details about using this software.
 
-### R19 : Paramétrer les options de compilation pour les évènements anormaux
+  2007-2024, CISOfy - https://cisofy.com/lynis/
+  Enterprise support available (compliance, plugins, interface and tools)
+################################################################################
 
-### R20 : Paramétrer les options de compilation pour les primitives de sécurité du noyau
 
-### R21 : Paramétrer les options de compilation pour les plugins du compilateur
+[+] Initializing program
+------------------------------------
+  - Detecting OS...                                           [ DONE ]
+  - Checking profiles...                                      [ DONE ]
 
-### R22 : Paramétrer les options de compilation pour la pile réseau
+  ---------------------------------------------------
+  Program version:           3.1.4
+  Operating system:          Linux
+  Operating system name:     Debian
+  Operating system version:  13
+  Kernel version:            6.12.57+deb13
+  Hardware platform:         x86_64
+  Hostname:                  srv-hardening
+  ---------------------------------------------------
+  Profiles:                  /etc/lynis/default.prf
+  Log file:                  /var/log/lynis.log
+  Report file:               /var/log/lynis-report.dat
+  Report version:            1.0
+  Plugin directory:          /etc/lynis/plugins
+  ---------------------------------------------------
+  Auditor:                   [Not Specified]
+  Language:                  en
+  Test category:             all
+  Test group:                all
+  ---------------------------------------------------
+  - Program update status...                                  [ NO UPDATE ]
 
-### R23 :Paramétrer les options de compilation pour divers comportements du noyau
+[+] System tools
+------------------------------------
+  - Scanning available tools...
+  - Checking system binaries...
 
-### R24 : Paramétrer les options de compilation spécifiques aux architectures 32 bits
+[+] Plugins (phase 1)
+------------------------------------
+ Note: plugins have more extensive tests and may take several minutes to complete
+  
+  - Plugin: debian
+    [
+[+] Debian Tests
+------------------------------------
+  - Checking for system binaries that are required by Debian Tests...
+    - Checking /bin...                                        [ FOUND ]
+    - Checking /sbin...                                       [ FOUND ]
+    - Checking /usr/bin...                                    [ FOUND ]
+    - Checking /usr/sbin...                                   [ FOUND ]
+    - Checking /usr/local/bin...                              [ FOUND ]
+    - Checking /usr/local/sbin...                             [ FOUND ]
+  - Authentication:
+    - PAM (Pluggable Authentication Modules):
+      - libpam-tmpdir                                         [ Not Installed ]
+  - File System Checks:
+    - DM-Crypt, Cryptsetup & Cryptmount:
+  - Software:
+    - apt-listbugs                                            [ Not Installed ]
+    - apt-listchanges                                         [ Installed and enabled for apt ]
+    - needrestart                                             [ Not Installed ]
+    - fail2ban                                                [ Not Installed ]
+]
 
-### R25 : Paramétrer les options de compilation spécifiques aux architectures x86_64 bits
+[+] Boot and services
+------------------------------------
+  - Service Manager                                           [ systemd ]
+  - Checking UEFI boot                                        [ DISABLED ]
+  - Checking presence GRUB2                                   [ FOUND ]
+    - Checking for password protection                        [ OK ]
+  - Check running services (systemctl)                        [ DONE ]
+        Result: found 10 running services
+  - Check enabled services at boot (systemctl)                [ DONE ]
+        Result: found 18 enabled services
+  - Check startup files (permissions)                         [ OK ]
+  - Running 'systemd-analyze security'
+      Unit name (exposure value) and predicate
+      --------------------------------
+    - anacron.service (value=9.6)                             [ UNSAFE ]
+    - auditd.service (value=8.9)                              [ EXPOSED ]
+    - cron.service (value=9.6)                                [ UNSAFE ]
+    - dbus.service (value=9.3)                                [ UNSAFE ]
+    - emergency.service (value=9.5)                           [ UNSAFE ]
+    - getty@tty1.service (value=9.6)                          [ UNSAFE ]
+    - ifup@enp0s3.service (value=9.5)                         [ UNSAFE ]
+    - lynis.service (value=9.6)                               [ UNSAFE ]
+    - rc-local.service (value=9.6)                            [ UNSAFE ]
+    - rescue.service (value=9.5)                              [ UNSAFE ]
+    - rsyslog.service (value=4.5)                             [ PROTECTED ]
+    - ssh.service (value=9.6)                                 [ UNSAFE ]
+    - sshd@sshd-keygen.service (value=9.6)                    [ UNSAFE ]
+    - systemd-ask-password-console.service (value=9.4)        [ UNSAFE ]
+    - systemd-ask-password-wall.service (value=9.4)           [ UNSAFE ]
+    - systemd-bsod.service (value=9.5)                        [ UNSAFE ]
+    - systemd-hostnamed.service (value=1.7)                   [ PROTECTED ]
+    - systemd-initctl.service (value=9.4)                     [ UNSAFE ]
+    - systemd-journald.service (value=4.9)                    [ PROTECTED ]
+    - systemd-logind.service (value=2.8)                      [ PROTECTED ]
+    - systemd-networkd.service (value=2.9)                    [ PROTECTED ]
+    - systemd-rfkill.service (value=9.4)                      [ UNSAFE ]
+    - systemd-timesyncd.service (value=2.1)                   [ PROTECTED ]
+    - systemd-udevd.service (value=7.1)                       [ MEDIUM ]
+    - user@1000.service (value=9.4)                           [ UNSAFE ]
 
-### R26 : Paramétrer les options de compilation spécifiques aux architectures ARM
+[+] Kernel
+------------------------------------
+  - Checking default runlevel                                 [ runlevel 5 ]
+  - Checking CPU support (NX/PAE)
+    CPU support: PAE and/or NoeXecute supported               [ FOUND ]
+  - Checking kernel version and release                       [ DONE ]
+  - Checking kernel type                                      [ DONE ]
+  - Checking loaded kernel modules                            [ DONE ]
+      Found 91 active modules
+  - Checking Linux kernel configuration file                  [ FOUND ]
+  - Checking default I/O kernel scheduler                     [ NOT FOUND ]
+  - Checking for available kernel update                      [ OK ]
+  - Checking core dumps configuration
+    - configuration in systemd conf files                     [ DEFAULT ]
+    - configuration in /etc/profile                           [ DEFAULT ]
+    - 'hard' configuration in /etc/security/limits.conf       [ ENABLED ]
+    - 'soft' configuration in /etc/security/limits.conf       [ DISABLED ]
+    - Checking setuid core dumps configuration                [ DISABLED ]
+  - Check if reboot is needed                                 [ NO ]
 
-### R27 : Paramétrer les options de compilation spécifiques aux architectures ARM 64 bits
+[+] Memory and Processes
+------------------------------------
+  - Checking /proc/meminfo                                    [ FOUND ]
+  - Searching for dead/zombie processes                       [ NOT FOUND ]
+  - Searching for IO waiting processes                        [ NOT FOUND ]
+  - Search prelink tooling                                    [ NOT FOUND ]
 
-### R46 : Activer SELinux avec la politique targeted
+[+] Users, Groups and Authentication
+------------------------------------
+  - Administrator accounts                                    [ OK ]
+  - Unique UIDs                                               [ OK ]
+  - Consistency of group files (grpck)                        [ OK ]
+  - Unique group IDs                                          [ OK ]
+  - Unique group names                                        [ OK ]
+  - Password file consistency                                 [ OK ]
+  - Password hashing methods                                  [ OK ]
+  - Checking password hashing rounds                          [ DISABLED ]
+  - Query system users (non daemons)                          [ DONE ]
+  - NIS+ authentication support                               [ NOT ENABLED ]
+  - NIS authentication support                                [ NOT ENABLED ]
+  - Sudoers file(s)                                           [ FOUND ]
+    - Permissions for directory: /etc/sudoers.d               [ WARNING ]
+    - Permissions for: /etc/sudoers                           [ OK ]
+    - Permissions for: /etc/sudoers.d/README                  [ OK ]
+  - PAM password strength tools                               [ OK ]
+  - PAM configuration files (pam.conf)                        [ FOUND ]
+  - PAM configuration files (pam.d)                           [ FOUND ]
+  - PAM modules                                               [ FOUND ]
+  - LDAP module in PAM                                        [ NOT FOUND ]
+  - Accounts without expire date                              [ SUGGESTION ]
+  - Accounts without password                                 [ OK ]
+  - Locked accounts                                           [ OK ]
+  - Checking user password aging (minimum)                    [ DISABLED ]
+  - User password aging (maximum)                             [ DISABLED ]
+  - Checking expired passwords                                [ OK ]
+  - Checking Linux single user mode authentication            [ OK ]
+  - Determining default umask
+    - umask (/etc/profile and /etc/profile.d)                 [ OK ]
+    - umask (/etc/login.defs)                                 [ SUGGESTION ]
+  - LDAP authentication support                               [ NOT ENABLED ]
+  - Logging failed login attempts                             [ DISABLED ]
 
-### R47 : Confiner les utilisateurs interactifs non privilégiés
+[+] Kerberos
+------------------------------------
+  - Check for Kerberos KDC and principals                     [ NOT FOUND ]
 
-### R48 : Paramétrer les variables SELinux
+[+] Shells
+------------------------------------
+  - Checking shells from /etc/shells
+    Result: found 7 shells (valid shells: 7).
+    - Session timeout settings/tools                          [ FOUND ]
+  - Checking default umask values
+    - Checking default umask in /etc/bash.bashrc              [ NONE ]
+    - Checking default umask in /etc/profile                  [ OK ]
 
-### R49 : Désinstaller les outils de débogage de politique SELinux
+[+] File systems
+------------------------------------
+  - Checking mount points
+    - Checking /home mount point                              [ SUGGESTION ]
+    - Checking /tmp mount point                               [ OK ]
+    - Checking /var mount point                               [ SUGGESTION ]
+  - Query swap partitions (fstab)                             [ OK ]
+  - Testing swap partitions                                   [ OK ]
+  - Testing /proc mount (hidepid)                             [ SUGGESTION ]
+  - Checking for old files in /tmp                            [ OK ]
+  - Checking /tmp sticky bit                                  [ OK ]
+  - Checking /var/tmp sticky bit                              [ OK ]
+  - ACL support root file system                              [ ENABLED ]
+  - Mount options of /                                        [ NON DEFAULT ]
+  - Mount options of /dev                                     [ PARTIALLY HARDENED ]
+  - Mount options of /dev/shm                                 [ PARTIALLY HARDENED ]
+  - Mount options of /run                                     [ HARDENED ]
+  - Mount options of /tmp                                     [ PARTIALLY HARDENED ]
+  - Total without nodev:4 noexec:7 nosuid:2 ro or noexec (W^X): 7 of total 24
+  - Disable kernel support of some filesystems
 
-### R66 : Durcir les composants de cloisonnement
+[+] USB Devices
+------------------------------------
+  - Checking usb-storage driver (modprobe config)             [ NOT DISABLED ]
+  - Checking USB devices authorization                        [ ENABLED ]
+  - Checking USBGuard                                         [ NOT FOUND ]
 
-### R76 : Sceller et vérifier l’intégrité des fichiers
+[+] Storage
+------------------------------------
+  - Checking firewire ohci driver (modprobe config)           [ NOT DISABLED ]
 
-### R77 : Protéger la base de données des scellés
+[+] NFS
+------------------------------------
+  - Check running NFS daemon                                  [ NOT FOUND ]
+
+[+] Name services
+------------------------------------
+  - Checking default DNS search domain                        [ FOUND ]
+  - Searching DNS domain name                                 [ FOUND ]
+      Domain name: eduroam.univ-ubs.fr
+  - Checking /etc/hosts
+    - Duplicate entries in hosts file                         [ NONE ]
+    - Presence of configured hostname in /etc/hosts           [ FOUND ]
+    - Hostname mapped to localhost                            [ NOT FOUND ]
+    - Localhost mapping to IP address                         [ OK ]
+
+[+] Ports and packages
+------------------------------------
+  - Searching package managers
+    - Searching dpkg package manager                          [ FOUND ]
+      - Querying package manager
+    - Query unpurged packages                                 [ NONE ]
+    - debsecan utility                                        [ FOUND ]
+      - debsecan cron job                                     [ FOUND ]
+  - Checking security repository in sources.list file         [ OK ]
+  - Checking APT package database                             [ OK ]
+  - Checking vulnerable packages (apt-get only)               [ DONE ]
+  - Checking upgradeable packages                             [ SKIPPED ]
+  - Checking package audit tool                               [ INSTALLED ]
+    Found: apt-get
+  - Toolkit for automatic upgrades                            [ NOT FOUND ]
+
+[+] Networking
+------------------------------------
+  - Checking IPv6 configuration                               [ DISABLED ]
+  - Checking configured nameservers
+    - Testing nameservers
+        Nameserver: 10.0.0.2                                  [ OK ]
+        Nameserver: 10.0.0.1                                  [ OK ]
+        Nameserver: 193.52.48.76                              [ OK ]
+    - Minimal of 2 responsive nameservers                     [ OK ]
+  - Getting listening ports (TCP/UDP)                         [ DONE ]
+  - Checking promiscuous interfaces                           [ OK ]
+  - Checking status DHCP client                               [ RUNNING ]
+  - Checking for ARP monitoring software                      [ NOT FOUND ]
+  - Uncommon network protocols                                [ 0 ]
+
+[+] Printers and Spools
+------------------------------------
+  - Checking cups daemon                                      [ NOT FOUND ]
+  - Checking lp daemon                                        [ NOT RUNNING ]
+
+[+] Software: e-mail and messaging
+------------------------------------
+
+[+] Software: firewalls
+------------------------------------
+  - Checking iptables kernel module                           [ FOUND ]
+  - Checking host based firewall                              [ ACTIVE ]
+
+[+] Software: webserver
+------------------------------------
+  - Checking Apache                                           [ NOT FOUND ]
+  - Checking nginx                                            [ NOT FOUND ]
+
+[+] SSH Support
+------------------------------------
+  - Checking running SSH daemon                               [ FOUND ]
+    - Searching SSH configuration                             [ FOUND ]
+    - OpenSSH option: AllowTcpForwarding                      [ SUGGESTION ]
+    - OpenSSH option: ClientAliveCountMax                     [ SUGGESTION ]
+    - OpenSSH option: ClientAliveInterval                     [ OK ]
+    - OpenSSH option: FingerprintHash                         [ OK ]
+    - OpenSSH option: GatewayPorts                            [ OK ]
+    - OpenSSH option: IgnoreRhosts                            [ OK ]
+    - OpenSSH option: LoginGraceTime                          [ OK ]
+    - OpenSSH option: LogLevel                                [ SUGGESTION ]
+    - OpenSSH option: MaxAuthTries                            [ SUGGESTION ]
+    - OpenSSH option: MaxSessions                             [ SUGGESTION ]
+    - OpenSSH option: PermitRootLogin                         [ OK ]
+    - OpenSSH option: PermitUserEnvironment                   [ OK ]
+    - OpenSSH option: PermitTunnel                            [ OK ]
+    - OpenSSH option: Port                                    [ SUGGESTION ]
+    - OpenSSH option: PrintLastLog                            [ OK ]
+    - OpenSSH option: StrictModes                             [ OK ]
+    - OpenSSH option: TCPKeepAlive                            [ SUGGESTION ]
+    - OpenSSH option: UseDNS                                  [ OK ]
+    - OpenSSH option: X11Forwarding                           [ SUGGESTION ]
+    - OpenSSH option: AllowAgentForwarding                    [ SUGGESTION ]
+    - OpenSSH option: AllowUsers                              [ NOT FOUND ]
+    - OpenSSH option: AllowGroups                             [ NOT FOUND ]
+
+[+] SNMP Support
+------------------------------------
+  - Checking running SNMP daemon                              [ NOT FOUND ]
+
+[+] Databases
+------------------------------------
+    No database engines found
+
+[+] LDAP Services
+------------------------------------
+  - Checking OpenLDAP instance                                [ NOT FOUND ]
+
+[+] PHP
+------------------------------------
+  - Checking PHP                                              [ NOT FOUND ]
+
+[+] Squid Support
+------------------------------------
+  - Checking running Squid daemon                             [ NOT FOUND ]
+
+[+] Logging and files
+------------------------------------
+  - Checking for a running log daemon                         [ OK ]
+    - Checking Syslog-NG status                               [ NOT FOUND ]
+    - Checking systemd journal status                         [ FOUND ]
+    - Checking Metalog status                                 [ NOT FOUND ]
+    - Checking RSyslog status                                 [ FOUND ]
+    - Checking RFC 3195 daemon status                         [ NOT FOUND ]
+    - Checking minilogd instances                             [ NOT FOUND ]
+    - Checking wazuh-agent daemon status                      [ NOT FOUND ]
+  - Checking logrotate presence                               [ OK ]
+  - Checking remote logging                                   [ NOT ENABLED ]
+  - Checking log directories (static list)                    [ DONE ]
+  - Checking open log files                                   [ DONE ]
+  - Checking deleted files in use                             [ DONE ]
+
+[+] Insecure services
+------------------------------------
+  - Installed inetd package                                   [ NOT FOUND ]
+  - Installed xinetd package                                  [ OK ]
+    - xinetd status                                           [ NOT ACTIVE ]
+  - Installed rsh client package                              [ OK ]
+  - Installed rsh server package                              [ OK ]
+  - Installed telnet client package                           [ OK ]
+  - Installed telnet server package                           [ NOT FOUND ]
+  - Checking NIS client installation                          [ OK ]
+  - Checking NIS server installation                          [ OK ]
+  - Checking TFTP client installation                         [ OK ]
+  - Checking TFTP server installation                         [ OK ]
+
+[+] Banners and identification
+------------------------------------
+  - /etc/issue                                                [ FOUND ]
+    - /etc/issue contents                                     [ WEAK ]
+  - /etc/issue.net                                            [ FOUND ]
+    - /etc/issue.net contents                                 [ WEAK ]
+
+[+] Scheduled tasks
+------------------------------------
+  - Checking crontab and cronjob files                        [ DONE ]
+
+[+] Accounting
+------------------------------------
+  - Checking accounting information                           [ NOT FOUND ]
+  - Checking sysstat accounting data                          [ NOT FOUND ]
+  - Checking auditd                                           [ NOT FOUND ]
+
+[+] Time and Synchronization
+------------------------------------
+  - NTP daemon found: systemd (timesyncd)                     [ FOUND ]
+  - Checking for a running NTP daemon or client               [ OK ]
+  - Last time synchronization                                 [ 27s ]
+
+[+] Cryptography
+------------------------------------
+  - Checking for expired SSL certificates [0/151]             [ NONE ]
+  - Kernel entropy is sufficient                              [ YES ]
+  - HW RNG & rngd                                             [ NO ]
+  - SW prng                                                   [ NO ]
+  - MOR variable not found                                    [ WEAK ]
+
+[+] Virtualization
+------------------------------------
+
+[+] Containers
+------------------------------------
+
+[+] Security frameworks
+------------------------------------
+  - Checking presence AppArmor                                [ FOUND ]
+    - Checking AppArmor status                                [ ENABLED ]
+        Found 30 unconfined processes
+  - Checking presence SELinux                                 [ NOT FOUND ]
+  - Checking presence TOMOYO Linux                            [ NOT FOUND ]
+  - Checking presence grsecurity                              [ NOT FOUND ]
+  - Checking for implemented MAC framework                    [ OK ]
+
+[+] Software: file integrity
+------------------------------------
+  - Checking file integrity tools
+  - Checking presence integrity tool                          [ NOT FOUND ]
+
+[+] Software: System tooling
+------------------------------------
+  - Checking automation tooling
+  - Automation tooling                                        [ NOT FOUND ]
+  - Checking for IDS/IPS tooling                              [ NONE ]
+
+[+] Software: Malware
+------------------------------------
+  - Malware software components                               [ NOT FOUND ]
+
+[+] File Permissions
+------------------------------------
+  - Starting file permissions check
+    File: /boot/grub/grub.cfg                                 [ OK ]
+    File: /etc/crontab                                        [ SUGGESTION ]
+    File: /etc/group                                          [ OK ]
+    File: /etc/group-                                         [ OK ]
+    File: /etc/hosts.allow                                    [ OK ]
+    File: /etc/hosts.deny                                     [ OK ]
+    File: /etc/issue                                          [ OK ]
+    File: /etc/issue.net                                      [ OK ]
+    File: /etc/motd                                           [ OK ]
+    File: /etc/passwd                                         [ OK ]
+    File: /etc/passwd-                                        [ OK ]
+    File: /etc/ssh/sshd_config                                [ SUGGESTION ]
+    Directory: /root/.ssh                                     [ OK ]
+    Directory: /etc/cron.d                                    [ SUGGESTION ]
+    Directory: /etc/cron.daily                                [ SUGGESTION ]
+    Directory: /etc/cron.hourly                               [ SUGGESTION ]
+    Directory: /etc/cron.weekly                               [ SUGGESTION ]
+    Directory: /etc/cron.monthly                              [ SUGGESTION ]
+
+[+] Home directories
+------------------------------------
+  - Permissions of home directories                           [ OK ]
+  - Ownership of home directories                             [ OK ]
+  - Checking shell history files                              [ OK ]
+
+[+] Kernel Hardening
+------------------------------------
+  - Comparing sysctl key pairs with scan profile
+    - dev.tty.ldisc_autoload (exp: 0)                         [ DIFFERENT ]
+    - fs.protected_fifos (exp: 2)                             [ DIFFERENT ]
+    - fs.protected_hardlinks (exp: 1)                         [ OK ]
+    - fs.protected_regular (exp: 2)                           [ OK ]
+    - fs.protected_symlinks (exp: 1)                          [ OK ]
+    - fs.suid_dumpable (exp: 0)                               [ OK ]
+    - kernel.core_uses_pid (exp: 1)                           [ OK ]
+    - kernel.ctrl-alt-del (exp: 0)                            [ OK ]
+    - kernel.dmesg_restrict (exp: 1)                          [ OK ]
+    - kernel.kptr_restrict (exp: 2)                           [ DIFFERENT ]
+    - kernel.modules_disabled (exp: 1)                        [ DIFFERENT ]
+    - kernel.perf_event_paranoid (exp: 2 3 4)                 [ OK ]
+    - kernel.randomize_va_space (exp: 2)                      [ OK ]
+    - kernel.sysrq (exp: 0)                                   [ DIFFERENT ]
+    - kernel.unprivileged_bpf_disabled (exp: 1)               [ DIFFERENT ]
+    - kernel.yama.ptrace_scope (exp: 1 2 3)                   [ DIFFERENT ]
+    - net.core.bpf_jit_harden (exp: 2)                        [ DIFFERENT ]
+    - net.ipv4.conf.all.accept_redirects (exp: 0)             [ DIFFERENT ]
+    - net.ipv4.conf.all.accept_source_route (exp: 0)          [ OK ]
+    - net.ipv4.conf.all.bootp_relay (exp: 0)                  [ OK ]
+    - net.ipv4.conf.all.forwarding (exp: 0)                   [ OK ]
+    - net.ipv4.conf.all.log_martians (exp: 1)                 [ DIFFERENT ]
+    - net.ipv4.conf.all.mc_forwarding (exp: 0)                [ OK ]
+    - net.ipv4.conf.all.proxy_arp (exp: 0)                    [ OK ]
+    - net.ipv4.conf.all.rp_filter (exp: 1)                    [ DIFFERENT ]
+    - net.ipv4.conf.all.send_redirects (exp: 0)               [ DIFFERENT ]
+    - net.ipv4.conf.default.accept_redirects (exp: 0)         [ DIFFERENT ]
+    - net.ipv4.conf.default.accept_source_route (exp: 0)      [ OK ]
+    - net.ipv4.conf.default.log_martians (exp: 1)             [ DIFFERENT ]
+    - net.ipv4.icmp_echo_ignore_broadcasts (exp: 1)           [ OK ]
+    - net.ipv4.icmp_ignore_bogus_error_responses (exp: 1)     [ OK ]
+    - net.ipv4.tcp_syncookies (exp: 1)                        [ OK ]
+    - net.ipv4.tcp_timestamps (exp: 0 1)                      [ OK ]
+
+[+] Hardening
+------------------------------------
+    - Installed compiler(s)                                   [ NOT FOUND ]
+    - Installed malware scanner                               [ NOT FOUND ]
+    - Non-native binary formats                               [ FOUND ]
+
+[+] Custom tests
+------------------------------------
+  - Running custom tests...                                   [ NONE ]
+
+[+] Plugins (phase 2)
+------------------------------------
+
+================================================================================
+
+  -[ Lynis 3.1.4 Results ]-
+
+  Great, no warnings
+
+  Suggestions (43):
+  ----------------------------
+  * This release is more than 4 months old. Check the website or GitHub to see if there is an update available. [LYNIS] 
+    - Related resources
+      * Website: https://cisofy.com/lynis/controls/LYNIS/
+
+  * Install libpam-tmpdir to set $TMP and $TMPDIR for PAM sessions [DEB-0280] 
+    - Related resources
+      * Website: https://cisofy.com/lynis/controls/DEB-0280/
+
+  * Install apt-listbugs to display a list of critical bugs prior to each APT installation. [DEB-0810] 
+    - Related resources
+      * Website: https://cisofy.com/lynis/controls/DEB-0810/
+
+  * Install needrestart, alternatively to debian-goodies, so that you can run needrestart after upgrades to determine which daemons are using old versions of libraries and need restarting. [DEB-0831] 
+    - Related resources
+      * Website: https://cisofy.com/lynis/controls/DEB-0831/
+
+  * Install fail2ban to automatically ban hosts that commit multiple authentication errors. [DEB-0880] 
+    - Related resources
+      * Website: https://cisofy.com/lynis/controls/DEB-0880/
+
+  * Determine runlevel and services at startup [BOOT-5180] 
+    - Related resources
+      * Website: https://cisofy.com/lynis/controls/BOOT-5180/
+
+  * Consider hardening system services [BOOT-5264] 
+    - Details  : Run '/usr/bin/systemd-analyze security SERVICE' for each service
+    - Related resources
+      * Article: Systemd features to secure service files: https://linux-audit.com/systemd/systemd-features-to-secure-units-and-services/
+      * Website: https://cisofy.com/lynis/controls/BOOT-5264/
+
+  * Configure password hashing rounds in /etc/login.defs [AUTH-9230] 
+    - Related resources
+      * Article: Linux password security: hashing rounds: https://linux-audit.com/authentication/configure-the-minimum-password-length-on-linux-systems/
+      * Website: https://cisofy.com/lynis/controls/AUTH-9230/
+
+  * When possible set expire dates for all password protected accounts [AUTH-9282] 
+    - Related resources
+      * Website: https://cisofy.com/lynis/controls/AUTH-9282/
+
+  * Configure minimum password age in /etc/login.defs [AUTH-9286] 
+    - Related resources
+      * Article: Configure minimum password length for Linux systems: https://linux-audit.com/configure-the-minimum-password-length-on-linux-systems/
+      * Website: https://cisofy.com/lynis/controls/AUTH-9286/
+
+  * Configure maximum password age in /etc/login.defs [AUTH-9286] 
+    - Related resources
+      * Article: Configure minimum password length for Linux systems: https://linux-audit.com/configure-the-minimum-password-length-on-linux-systems/
+      * Website: https://cisofy.com/lynis/controls/AUTH-9286/
+
+  * Default umask in /etc/login.defs could not be found and defaults usually to 022, which could be more strict like 027 [AUTH-9328] 
+    - Related resources
+      * Article: Set default file permissions on Linux with umask: https://linux-audit.com/filesystems/file-permissions/set-default-file-permissions-with-umask/
+      * Website: https://cisofy.com/lynis/controls/AUTH-9328/
+
+  * To decrease the impact of a full /home file system, place /home on a separate partition [FILE-6310] 
+    - Related resources
+      * Website: https://cisofy.com/lynis/controls/FILE-6310/
+
+  * To decrease the impact of a full /var file system, place /var on a separate partition [FILE-6310] 
+    - Related resources
+      * Website: https://cisofy.com/lynis/controls/FILE-6310/
+
+  * Disable drivers like USB storage when not used, to prevent unauthorized storage or data theft [USB-1000] 
+    - Related resources
+      * Website: https://cisofy.com/lynis/controls/USB-1000/
+
+  * Disable drivers like firewire storage when not used, to prevent unauthorized storage or data theft [STRG-1846] 
+    - Related resources
+      * Website: https://cisofy.com/lynis/controls/STRG-1846/
+
+  * Install debsums utility for the verification of packages with known good database. [PKGS-7370] 
+    - Related resources
+      * Website: https://cisofy.com/lynis/controls/PKGS-7370/
+
+  * Install package apt-show-versions for patch management purposes [PKGS-7394] 
+    - Related resources
+      * Website: https://cisofy.com/lynis/controls/PKGS-7394/
+
+  * Consider using a tool to automatically apply upgrades [PKGS-7420] 
+    - Related resources
+      * Website: https://cisofy.com/lynis/controls/PKGS-7420/
+
+  * Determine if protocol 'dccp' is really needed on this system [NETW-3200] 
+    - Related resources
+      * Website: https://cisofy.com/lynis/controls/NETW-3200/
+
+  * Determine if protocol 'sctp' is really needed on this system [NETW-3200] 
+    - Related resources
+      * Website: https://cisofy.com/lynis/controls/NETW-3200/
+
+  * Determine if protocol 'rds' is really needed on this system [NETW-3200] 
+    - Related resources
+      * Website: https://cisofy.com/lynis/controls/NETW-3200/
+
+  * Determine if protocol 'tipc' is really needed on this system [NETW-3200] 
+    - Related resources
+      * Website: https://cisofy.com/lynis/controls/NETW-3200/
+
+  * Consider hardening SSH configuration [SSH-7408] 
+    - Details  : AllowTcpForwarding (set YES to NO)
+    - Related resources
+      * Article: OpenSSH security and hardening: https://linux-audit.com/ssh/audit-and-harden-your-ssh-configuration/
+      * Website: https://cisofy.com/lynis/controls/SSH-7408/
+
+  * Consider hardening SSH configuration [SSH-7408] 
+    - Details  : ClientAliveCountMax (set 3 to 2)
+    - Related resources
+      * Article: OpenSSH security and hardening: https://linux-audit.com/ssh/audit-and-harden-your-ssh-configuration/
+      * Website: https://cisofy.com/lynis/controls/SSH-7408/
+
+  * Consider hardening SSH configuration [SSH-7408] 
+    - Details  : LogLevel (set INFO to VERBOSE)
+    - Related resources
+      * Article: OpenSSH security and hardening: https://linux-audit.com/ssh/audit-and-harden-your-ssh-configuration/
+      * Website: https://cisofy.com/lynis/controls/SSH-7408/
+
+  * Consider hardening SSH configuration [SSH-7408] 
+    - Details  : MaxAuthTries (set 6 to 3)
+    - Related resources
+      * Article: OpenSSH security and hardening: https://linux-audit.com/ssh/audit-and-harden-your-ssh-configuration/
+      * Website: https://cisofy.com/lynis/controls/SSH-7408/
+
+  * Consider hardening SSH configuration [SSH-7408] 
+    - Details  : MaxSessions (set 10 to 2)
+    - Related resources
+      * Article: OpenSSH security and hardening: https://linux-audit.com/ssh/audit-and-harden-your-ssh-configuration/
+      * Website: https://cisofy.com/lynis/controls/SSH-7408/
+
+  * Consider hardening SSH configuration [SSH-7408] 
+    - Details  : Port (set 22 to )
+    - Related resources
+      * Article: OpenSSH security and hardening: https://linux-audit.com/ssh/audit-and-harden-your-ssh-configuration/
+      * Website: https://cisofy.com/lynis/controls/SSH-7408/
+
+  * Consider hardening SSH configuration [SSH-7408] 
+    - Details  : TCPKeepAlive (set YES to NO)
+    - Related resources
+      * Article: OpenSSH security and hardening: https://linux-audit.com/ssh/audit-and-harden-your-ssh-configuration/
+      * Website: https://cisofy.com/lynis/controls/SSH-7408/
+
+  * Consider hardening SSH configuration [SSH-7408] 
+    - Details  : X11Forwarding (set YES to NO)
+    - Related resources
+      * Article: OpenSSH security and hardening: https://linux-audit.com/ssh/audit-and-harden-your-ssh-configuration/
+      * Website: https://cisofy.com/lynis/controls/SSH-7408/
+
+  * Consider hardening SSH configuration [SSH-7408] 
+    - Details  : AllowAgentForwarding (set YES to NO)
+    - Related resources
+      * Article: OpenSSH security and hardening: https://linux-audit.com/ssh/audit-and-harden-your-ssh-configuration/
+      * Website: https://cisofy.com/lynis/controls/SSH-7408/
+
+  * Enable logging to an external logging host for archiving purposes and additional protection [LOGG-2154] 
+    - Related resources
+      * Website: https://cisofy.com/lynis/controls/LOGG-2154/
+
+  * Add a legal banner to /etc/issue, to warn unauthorized users [BANN-7126] 
+    - Related resources
+      * Article: The real purpose of login banners: https://linux-audit.com/the-real-purpose-of-login-banners-on-linux/
+      * Website: https://cisofy.com/lynis/controls/BANN-7126/
+
+  * Add legal banner to /etc/issue.net, to warn unauthorized users [BANN-7130] 
+    - Related resources
+      * Article: The real purpose of login banners: https://linux-audit.com/the-real-purpose-of-login-banners-on-linux/
+      * Website: https://cisofy.com/lynis/controls/BANN-7130/
+
+  * Enable process accounting [ACCT-9622] 
+    - Related resources
+      * Website: https://cisofy.com/lynis/controls/ACCT-9622/
+
+  * Enable sysstat to collect accounting (no results) [ACCT-9626] 
+    - Related resources
+      * Website: https://cisofy.com/lynis/controls/ACCT-9626/
+
+  * Enable auditd to collect audit information [ACCT-9628] 
+    - Related resources
+      * Article: Linux audit framework 101: basic rules for configuration: https://linux-audit.com/linux-audit-framework/linux-audit-framework-101-basic-rules-for-configuration/
+      * Article: Monitoring Linux file access, changes and data modifications: https://linux-audit.com/monitoring-linux-file-access-changes-and-modifications/
+      * Website: https://cisofy.com/lynis/controls/ACCT-9628/
+
+  * Install a file integrity tool to monitor changes to critical and sensitive files [FINT-4350] 
+    - Related resources
+      * Article: Monitoring Linux file access, changes and data modifications: https://linux-audit.com/monitoring-linux-file-access-changes-and-modifications/
+      * Article: Monitor for file changes on Linux: https://linux-audit.com/monitor-for-file-system-changes-on-linux/
+      * Website: https://cisofy.com/lynis/controls/FINT-4350/
+
+  * Determine if automation tools are present for system management [TOOL-5002] 
+    - Related resources
+      * Website: https://cisofy.com/lynis/controls/TOOL-5002/
+
+  * Consider restricting file permissions [FILE-7524] 
+    - Details  : See screen output or log file
+    - Solution : Use chmod to change file permissions
+    - Related resources
+      * Website: https://cisofy.com/lynis/controls/FILE-7524/
+
+  * One or more sysctl values differ from the scan profile and could be tweaked [KRNL-6000] 
+    - Solution : Change sysctl value or disable test (skip-test=KRNL-6000:<sysctl-key>)
+    - Related resources
+      * Article: Linux hardening with sysctl settings: https://linux-audit.com/linux-hardening-with-sysctl/
+      * Article: Overview of sysctl options and values: https://linux-audit.com/kernel/sysctl/
+      * Website: https://cisofy.com/lynis/controls/KRNL-6000/
+
+  * Harden the system by installing at least one malware scanner, to perform periodic file system scans [HRDN-7230] 
+    - Solution : Install a tool like rkhunter, chkrootkit, OSSEC, Wazuh
+    - Related resources
+      * Article: Antivirus for Linux: is it really needed?: https://linux-audit.com/malware/antivirus-for-linux-really-needed/
+      * Article: Monitoring Linux Systems for Rootkits: https://linux-audit.com/monitoring-linux-systems-for-rootkits/
+      * Website: https://cisofy.com/lynis/controls/HRDN-7230/
+
+  Follow-up:
+  ----------------------------
+  - Show details of a test (lynis show details TEST-ID)
+  - Check the logfile for all details (less /var/log/lynis.log)
+  - Read security controls texts (https://cisofy.com)
+  - Use --upload to upload data to central system (Lynis Enterprise users)
+
+================================================================================
+
+  Lynis security scan details:
+
+  Hardening index : 67 [#############       ]
+  Tests performed : 253
+  Plugins enabled : 1
+
+  Components:
+  - Firewall               [V]
+  - Malware scanner        [X]
+
+  Scan mode:
+  Normal [V]  Forensics [ ]  Integration [ ]  Pentest [ ]
+
+  Lynis modules:
+  - Compliance status      [?]
+  - Security audit         [V]
+  - Vulnerability scan     [V]
+
+  Files:
+  - Test and debug information      : /var/log/lynis.log
+  - Report data                     : /var/log/lynis-report.dat
+
+================================================================================
+
+  Lynis 3.1.4
+
+  Auditing, system hardening, and compliance for UNIX-based systems
+  (Linux, macOS, BSD, and others)
+
+  2007-2024, CISOfy - https://cisofy.com/lynis/
+  Enterprise support available (compliance, plugins, interface and tools)
+
+================================================================================
+
+  [TIP]: Enhance Lynis audits by adding your settings to custom.prf (see /etc/lynis/default.prf for all settings)
+
+```
 
 ## Sources
 
